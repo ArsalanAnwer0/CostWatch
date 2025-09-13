@@ -3,10 +3,16 @@ from pydantic import BaseModel
 from typing import List, Dict, Optional, Any
 from datetime import datetime, date
 import random
+import logging
 
 from app.routes.auth import verify_token
+from app.utils.service_client import ServiceClient
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
+
+# Initialize service client for microservice communication
+service_client = ServiceClient()
 
 # Pydantic models
 class CostData(BaseModel):
@@ -32,6 +38,11 @@ class OptimizationRecommendation(BaseModel):
     recommendation: str
     priority: str
     estimated_effort: str
+
+class ScanRequest(BaseModel):
+    regions: List[str] = ['us-west-2']
+    include_costs: bool = True
+    scan_types: List[str] = ['ec2', 'rds', 's3']
 
 # Mock data generators
 def generate_mock_cost_data(days: int = 30) -> List[CostData]:
@@ -194,4 +205,280 @@ async def create_cost_alert(
         "threshold": str(threshold),
         "period": period,
         "alert_id": f"alert_{random.randint(1000, 9999)}"
+    }
+
+# New endpoints for service integration
+@router.post("/scan/trigger")
+async def trigger_resource_scan(
+    scan_request: ScanRequest,
+    current_user: str = Depends(verify_token)
+) -> Dict[str, Any]:
+    """Trigger a comprehensive resource scan via Resource Scanner service."""
+    try:
+        logger.info(f"Triggering resource scan for user {current_user}")
+        
+        result = await service_client.scan_all_resources(
+            regions=scan_request.regions, 
+            include_costs=scan_request.include_costs
+        )
+        
+        if result is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Resource Scanner service is unavailable"
+            )
+        
+        return {
+            "message": "Resource scan completed successfully",
+            "scan_id": result.get("scan_id"),
+            "summary": result.get("summary"),
+            "regions_scanned": scan_request.regions,
+            "triggered_by": current_user,
+            "timestamp": datetime.utcnow().isoformat(),
+            "details": {
+                "total_resources": result.get("summary", {}).get("total_resources", 0),
+                "estimated_cost": result.get("summary", {}).get("total_estimated_cost", 0.0),
+                "optimization_opportunities": result.get("summary", {}).get("optimization_opportunities", 0)
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to trigger resource scan: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to trigger resource scan"
+        )
+
+@router.post("/scan/ec2")
+async def trigger_ec2_scan(
+    region: str = Query("us-west-2", description="AWS region to scan"),
+    include_costs: bool = Query(True, description="Include cost estimates"),
+    current_user: str = Depends(verify_token)
+) -> Dict[str, Any]:
+    """Trigger EC2 resource scan via Resource Scanner service."""
+    try:
+        logger.info(f"Triggering EC2 scan for region {region}")
+        
+        result = await service_client.scan_ec2_resources(
+            region=region,
+            include_costs=include_costs
+        )
+        
+        if result is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Resource Scanner service is unavailable"
+            )
+        
+        return {
+            "message": "EC2 scan completed successfully",
+            "region": region,
+            "triggered_by": current_user,
+            "timestamp": datetime.utcnow().isoformat(),
+            "results": result.get("results", {}),
+            "summary": {
+                "instances_found": len(result.get("results", {}).get("instances", [])),
+                "estimated_monthly_cost": result.get("results", {}).get("estimated_monthly_cost", 0.0),
+                "optimization_opportunities": len(result.get("results", {}).get("optimization_opportunities", []))
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to trigger EC2 scan: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to trigger EC2 scan"
+        )
+
+@router.get("/scan/status/{scan_id}")
+async def get_scan_status(
+    scan_id: str,
+    current_user: str = Depends(verify_token)
+) -> Dict[str, Any]:
+    """Get the status of a resource scan."""
+    # In a real implementation, this would query a database or cache
+    # For now, return mock status based on scan_id pattern
+    
+    import time
+    current_time = time.time()
+    scan_timestamp = int(scan_id.split('_')[1]) if '_' in scan_id else current_time
+    
+    # Mock different statuses based on time elapsed
+    time_elapsed = current_time - scan_timestamp
+    
+    if time_elapsed < 10:
+        status = "running"
+        progress = min(int(time_elapsed * 10), 90)
+    else:
+        status = "completed"
+        progress = 100
+    
+    return {
+        "scan_id": scan_id,
+        "status": status,
+        "progress": progress,
+        "started_at": datetime.fromtimestamp(scan_timestamp).isoformat(),
+        "completed_at": datetime.utcnow().isoformat() if status == "completed" else None,
+        "resources_found": 42 if status == "completed" else None,
+        "optimization_opportunities": 8 if status == "completed" else None,
+        "estimated_savings": 1247.50 if status == "completed" else None
+    }
+
+@router.get("/optimization/live/{resource_type}")
+async def get_live_optimization_recommendations(
+    resource_type: str,
+    current_user: str = Depends(verify_token)
+) -> Dict[str, Any]:
+    """Get live optimization recommendations from Resource Scanner service."""
+    try:
+        if resource_type not in ['ec2', 'rds', 's3']:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported resource type: {resource_type}. Supported types: ec2, rds, s3"
+            )
+        
+        result = await service_client.get_optimization_recommendations(resource_type)
+        
+        if result is None:
+            raise HTTPException(
+                status_code=503,
+                detail="Resource Scanner service is unavailable"
+            )
+        
+        return {
+            "resource_type": resource_type,
+            "timestamp": datetime.utcnow().isoformat(),
+            "recommendations": result.get("recommendations", []),
+            "summary": {
+                "total_recommendations": len(result.get("recommendations", [])),
+                "categories_covered": len(set(rec.get("category", "general") for rec in result.get("recommendations", [])))
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get optimization recommendations for {resource_type}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to get optimization recommendations"
+        )
+
+@router.get("/services/health")
+async def check_services_health(
+    current_user: str = Depends(verify_token)
+) -> Dict[str, Any]:
+    """Check health of all dependent services."""
+    try:
+        scanner_healthy = await service_client.health_check_scanner()
+        
+        # Mock health checks for other services (in production, implement real checks)
+        database_healthy = True  # Would implement actual DB health check
+        redis_healthy = True     # Would implement actual Redis health check
+        
+        all_healthy = scanner_healthy and database_healthy and redis_healthy
+        
+        return {
+            "timestamp": datetime.utcnow().isoformat(),
+            "services": {
+                "api_gateway": "healthy",
+                "resource_scanner": "healthy" if scanner_healthy else "unhealthy",
+                "database": "healthy" if database_healthy else "unhealthy",
+                "redis": "healthy" if redis_healthy else "unhealthy"
+            },
+            "overall_status": "healthy" if all_healthy else "degraded",
+            "checked_by": current_user
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to check services health: {e}")
+        return {
+            "timestamp": datetime.utcnow().isoformat(),
+            "services": {
+                "api_gateway": "healthy",
+                "resource_scanner": "unknown",
+                "database": "unknown",
+                "redis": "unknown"
+            },
+            "overall_status": "unknown",
+            "error": str(e),
+            "checked_by": current_user
+        }
+
+@router.get("/analytics/dashboard")
+async def get_analytics_dashboard(
+    period: str = Query("30d", description="Analysis period"),
+    current_user: str = Depends(verify_token)
+) -> Dict[str, Any]:
+    """Get comprehensive analytics dashboard data."""
+    try:
+        # In a real implementation, this would aggregate data from multiple sources
+        # For now, return mock comprehensive dashboard data
+        
+        base_cost = 4521.67 if period == "30d" else 1247.83 if period == "7d" else 13565.01
+        
+        return {
+            "period": period,
+            "timestamp": datetime.utcnow().isoformat(),
+            "cost_overview": {
+                "total_spend": base_cost,
+                "trend": "stable",
+                "month_over_month_change": 2.3,
+                "budget_utilization": 78.5
+            },
+            "top_cost_drivers": [
+                {"service": "EC2", "cost": base_cost * 0.45, "change": "+5.2%"},
+                {"service": "RDS", "cost": base_cost * 0.25, "change": "-2.1%"},
+                {"service": "S3", "cost": base_cost * 0.15, "change": "+1.8%"}
+            ],
+            "optimization_summary": {
+                "total_opportunities": 23,
+                "potential_monthly_savings": base_cost * 0.35,
+                "high_priority_actions": 8,
+                "quick_wins": 12
+            },
+            "resource_utilization": {
+                "ec2_utilization": 67.3,
+                "rds_utilization": 82.1,
+                "storage_efficiency": 74.8
+            },
+            "alerts": {
+                "active_alerts": 3,
+                "budget_warnings": 1,
+                "optimization_reminders": 5
+            },
+            "generated_for": current_user
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to generate analytics dashboard: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to generate analytics dashboard"
+        )
+
+@router.post("/optimization/implement")
+async def implement_optimization(
+    resource_id: str = Query(..., description="Resource ID to optimize"),
+    recommendation_id: str = Query(..., description="Recommendation ID to implement"),
+    current_user: str = Depends(verify_token)
+) -> Dict[str, Any]:
+    """Mock endpoint for implementing optimization recommendations."""
+    # In a real implementation, this would trigger actual AWS API calls
+    # For now, return mock implementation result
+    
+    return {
+        "message": "Optimization implementation initiated",
+        "resource_id": resource_id,
+        "recommendation_id": recommendation_id,
+        "implementation_id": f"impl_{random.randint(10000, 99999)}",
+        "status": "pending",
+        "estimated_completion": "2024-01-15T10:30:00Z",
+        "estimated_savings": round(random.uniform(50, 500), 2),
+        "initiated_by": current_user,
+        "timestamp": datetime.utcnow().isoformat()
     }

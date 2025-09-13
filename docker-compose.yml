@@ -1,0 +1,139 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: costwatch-postgres
+    environment:
+      POSTGRES_DB: costwatch
+      POSTGRES_USER: costwatch_user
+      POSTGRES_PASSWORD: costwatch_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U costwatch_user -d costwatch"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - costwatch-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: costwatch-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - costwatch-network
+
+  # API Gateway Service
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: costwatch-api-gateway
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://costwatch_user:costwatch_password@postgres:5432/costwatch
+      - REDIS_URL=redis://redis:6379/0
+      - RESOURCE_SCANNER_URL=http://resource-scanner:5000
+      - JWT_SECRET_KEY=dev-secret-key-change-in-production
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:8080
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      resource-scanner:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ./services/api-gateway/app:/app/app:ro
+    networks:
+      - costwatch-network
+    restart: unless-stopped
+
+  # Resource Scanner Service
+  resource-scanner:
+    build:
+      context: ./services/resource-scanner
+      dockerfile: Dockerfile
+    container_name: costwatch-resource-scanner
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://costwatch_user:costwatch_password@postgres:5432/costwatch
+      - REDIS_URL=redis://redis:6379/1
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=mock-access-key
+      - AWS_SECRET_ACCESS_KEY=mock-secret-key
+      - FLASK_ENV=development
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ./services/resource-scanner/app:/app/app:ro
+    networks:
+      - costwatch-network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (Optional - for production-like setup)
+  nginx:
+    image: nginx:alpine
+    container_name: costwatch-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api-gateway
+      - resource-scanner
+    networks:
+      - costwatch-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  costwatch-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
