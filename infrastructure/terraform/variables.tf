@@ -39,32 +39,20 @@ variable "enable_vpn_gateway" {
   default     = false
 }
 
-variable "db_instance_class" {
-  description = "RDS instance class"
+variable "log_retention_days" {
+  description = "Number of days to retain CloudWatch logs"
+  type        = number
+  default     = 30
+}
+
+variable "alert_email_addresses" {
+  description = "List of email addresses for alerts"
+  type        = list(string)
+  default     = ["admin@costwatch.com"]
+}
+
+variable "cost_anomaly_email" {
+  description = "Email address for cost anomaly alerts"
   type        = string
-  default     = "db.t3.micro"
-}
-
-variable "eks_node_instance_type" {
-  description = "EKS node instance type"
-  type        = string
-  default     = "t3.medium"
-}
-
-variable "eks_node_group_min_size" {
-  description = "Minimum number of nodes in EKS node group"
-  type        = number
-  default     = 1
-}
-
-variable "eks_node_group_max_size" {
-  description = "Maximum number of nodes in EKS node group"
-  type        = number
-  default     = 5
-}
-
-variable "eks_node_group_desired_size" {
-  description = "Desired number of nodes in EKS node group"
-  type        = number
-  default     = 2
+  default     = "admin@costwatch.com"
 }

@@ -13,24 +13,17 @@ output "public_subnet_ids" {
   value       = module.vpc.public_subnet_ids
 }
 
-output "eks_cluster_endpoint" {
-  description = "Endpoint for EKS control plane"
-  value       = module.eks.cluster_endpoint
-  sensitive   = true
+output "eks_cluster_role_arn" {
+  description = "ARN of the EKS cluster role"
+  value       = module.iam.eks_cluster_role_arn
 }
 
-output "eks_cluster_name" {
-  description = "Name of the EKS cluster"
-  value       = module.eks.cluster_name
+output "eks_node_role_arn" {
+  description = "ARN of the EKS node role"
+  value       = module.iam.eks_node_role_arn
 }
 
-output "rds_endpoint" {
-  description = "RDS instance endpoint"
-  value       = module.rds.db_instance_endpoint
-  sensitive   = true
-}
-
-output "s3_bucket_name" {
-  description = "Name of the S3 bucket"
-  value       = module.storage.s3_bucket_name
+output "sns_topic_arn" {
+  description = "ARN of the SNS topic for alerts"
+  value       = module.monitoring.sns_topic_arn
 }
