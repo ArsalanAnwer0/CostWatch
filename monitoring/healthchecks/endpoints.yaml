@@ -1,0 +1,42 @@
+# CostWatch Health Check Endpoints Configuration
+services:
+  api-gateway:
+    endpoint: "http://api-gateway:8000/health"
+    timeout: 10
+    interval: 30
+    retries: 3
+    
+  cost-analyzer:
+    endpoint: "http://cost-analyzer:8001/health"
+    timeout: 15
+    interval: 30
+    retries: 3
+    
+  resource-scanner:
+    endpoint: "http://resource-scanner:8002/health"
+    timeout: 20
+    interval: 60
+    retries: 3
+    
+  analytics-engine:
+    endpoint: "http://analytics-engine:8003/health"
+    timeout: 30
+    interval: 60
+    retries: 3
+    
+  alert-manager:
+    endpoint: "http://alert-manager:8004/health" 
+    timeout: 10
+    interval: 30
+    retries: 3
+
+databases:
+  postgres:
+    endpoint: "postgres:5432"
+    timeout: 5
+    interval: 30
+    
+  redis:
+    endpoint: "redis:6379"
+    timeout: 5
+    interval: 30 

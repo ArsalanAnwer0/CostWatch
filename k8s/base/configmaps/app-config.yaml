@@ -4,15 +4,83 @@ metadata:
   name: costwatch-config
   namespace: costwatch
 data:
-  ENVIRONMENT: "dev"
-  LOG_LEVEL: "info"
+  # Environment settings
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  DEBUG: "false"
+  
+  # Service ports (all 5 microservices)
   API_GATEWAY_PORT: "8000"
-  RESOURCE_SCANNER_PORT: "5000"
+  COST_ANALYZER_PORT: "8001"
+  RESOURCE_SCANNER_PORT: "8002"
+  ANALYTICS_ENGINE_PORT: "8003"
+  ALERT_MANAGER_PORT: "8004"
+  
+  # Database configuration
+  DATABASE_HOST: "postgres"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "costwatch_db"
+  DATABASE_USER: "costwatch_user"
+  DATABASE_SSL_MODE: "prefer"
+  
+  # Redis configuration
+  REDIS_HOST: "redis"
   REDIS_PORT: "6379"
-  POSTGRES_PORT: "5432"
-  # Database configuration (non-sensitive)
-  POSTGRES_DB: "costwatch_dev"
-  POSTGRES_USER: "costwatch_user"
-  # Service URLs
-  RESOURCE_SCANNER_URL: "http://resource-scanner-service:5000"
+  REDIS_DB: "0"
+  
+  # Inter-service communication URLs
   API_GATEWAY_URL: "http://api-gateway-service:8000"
+  COST_ANALYZER_URL: "http://cost-analyzer-service:8001"
+  RESOURCE_SCANNER_URL: "http://resource-scanner-service:8002"
+  ANALYTICS_ENGINE_URL: "http://analytics-engine-service:8003"
+  ALERT_MANAGER_URL: "http://alert-manager-service:8004"
+  
+  # AWS configuration
+  AWS_REGION: "us-west-2"
+  AWS_REGIONS_TO_SCAN: '["us-west-2", "us-east-1"]'
+  
+  # Application settings
+  API_VERSION: "v1"
+  DEFAULT_CURRENCY: "USD"
+  
+  # Cost analysis settings
+  DEFAULT_COST_THRESHOLD: "1000.00"
+  COST_CACHE_TTL: "3600"
+  ANALYSIS_CACHE_TTL: "1800"
+  
+  # Scanning settings
+  FULL_SCAN_INTERVAL: "3600"
+  INCREMENTAL_SCAN_INTERVAL: "300"
+  ENABLE_AUTOMATIC_SCANNING: "true"
+  
+  # Analytics settings
+  ENABLE_ML_PREDICTIONS: "true"
+  ENABLE_ANOMALY_DETECTION: "true"
+  ENABLE_FORECASTING: "true"
+  PREDICTION_HORIZON_DAYS: "30"
+  
+  # Alert settings
+  ENABLE_ALERT_PROCESSING: "true"
+  ALERT_CHECK_INTERVAL: "300"
+  ENABLE_EMAIL_NOTIFICATIONS: "true"
+  
+  # Monitoring settings
+  ENABLE_MONITORING: "true"
+  ENABLE_METRICS: "true"
+  PROMETHEUS_PORT: "9090"
+  METRICS_ENDPOINT: "/metrics"
+  HEALTH_CHECK_ENDPOINT: "/health"
+  
+  # Security settings
+  JWT_ALGORITHM: "HS256"
+  JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+  
+  # Performance settings
+  MAX_CONCURRENT_REQUESTS: "50"
+  REQUEST_TIMEOUT: "30"
+  
+  # Feature flags
+  ENABLE_API_DOCS: "true"
+  ENABLE_CORS: "true"
+  ENABLE_RATE_LIMITING: "true"
+  ENABLE_COST_OPTIMIZATION: "true"
