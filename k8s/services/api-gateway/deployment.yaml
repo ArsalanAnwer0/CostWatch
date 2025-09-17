@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: costwatch
+  labels:
+    app: api-gateway
+    component: backend
+    tier: api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+        component: backend
+        tier: api
+    spec:
+      serviceAccountName: costwatch-sa
+      containers:
+      - name: api-gateway
+        image: costwatch/api-gateway:latest
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: ENVIRONMENT
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: LOG_LEVEL
+        - name: API_GATEWAY_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: API_GATEWAY_PORT
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: POSTGRES_PORT
+        - name: RESOURCE_SCANNER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: RESOURCE_SCANNER_URL
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: costwatch-secrets
+              key: POSTGRES_PASSWORD
+        - name: JWT_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: costwatch-secrets
+              key: JWT_SECRET_KEY
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5

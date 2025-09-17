@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: costwatch
+
+resources:
+- base/namespace/costwatch-namespace.yaml
+- base/configmaps/app-config.yaml
+- base/secrets/app-secrets.yaml
+- base/network-policies.yaml
+- services/api-gateway/deployment.yaml
+- services/api-gateway/service.yaml
+- services/api-gateway/hpa.yaml
+- services/resource-scanner/deployment.yaml
+- services/resource-scanner/service.yaml
+- services/cost-analyzer/deployment.yaml
+- services/cost-analyzer/service.yaml
+- services/cost-analyzer/hpa.yaml
+
+commonLabels:
+  project: costwatch
+  version: v1.0.0
+
+images:
+- name: costwatch/api-gateway
+  newTag: latest
+- name: costwatch/resource-scanner
+  newTag: latest
+- name: costwatch/cost-analyzer
+  newTag: latest

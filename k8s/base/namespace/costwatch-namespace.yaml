@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: costwatch
+  labels:
+    name: costwatch
+    environment: dev
+    project: costwatch
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: costwatch-sa
+  namespace: costwatch
+  labels:
+    app: costwatch

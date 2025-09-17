@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resource-scanner
+  namespace: costwatch
+  labels:
+    app: resource-scanner
+    component: backend
+    tier: scanner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: resource-scanner
+  template:
+    metadata:
+      labels:
+        app: resource-scanner
+        component: backend
+        tier: scanner
+    spec:
+      serviceAccountName: costwatch-sa
+      containers:
+      - name: resource-scanner
+        image: costwatch/resource-scanner:latest
+        ports:
+        - containerPort: 5000
+          name: http
+        env:
+        - name: ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: ENVIRONMENT
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: LOG_LEVEL
+        - name: RESOURCE_SCANNER_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: RESOURCE_SCANNER_PORT
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: POSTGRES_PORT
+        - name: API_GATEWAY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: API_GATEWAY_URL
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: costwatch-secrets
+              key: POSTGRES_PASSWORD
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: costwatch-secrets
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: costwatch-secrets
+              key: AWS_SECRET_ACCESS_KEY
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
