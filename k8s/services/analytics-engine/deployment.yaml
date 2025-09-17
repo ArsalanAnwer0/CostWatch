@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-engine
+  namespace: costwatch
+  labels:
+    app: analytics-engine
+    component: backend
+    tier: analytics
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: analytics-engine
+  template:
+    metadata:
+      labels:
+        app: analytics-engine
+        component: backend
+        tier: analytics
+    spec:
+      serviceAccountName: costwatch-sa
+      containers:
+      - name: analytics-engine
+        image: costwatch/analytics-engine:latest
+        ports:
+        - containerPort: 5002
+          name: http
+        env:
+        - name: ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: ENVIRONMENT
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: LOG_LEVEL
+        - name: POSTGRES_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: POSTGRES_HOST
+        - name: POSTGRES_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: POSTGRES_PORT
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: POSTGRES_DB
+        - name: POSTGRES_USER
+          valueFrom:
+            configMapKeyRef:
+              name: costwatch-config
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: costwatch-secrets
+              key: POSTGRES_PASSWORD
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: costwatch-secrets
+              key: JWT_SECRET_KEY
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 5002
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          timeoutSeconds: 3
