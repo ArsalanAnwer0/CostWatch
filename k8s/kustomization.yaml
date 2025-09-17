@@ -16,6 +16,9 @@ resources:
 - services/cost-analyzer/deployment.yaml
 - services/cost-analyzer/service.yaml
 - services/cost-analyzer/hpa.yaml
+- services/alert-manager/deployment.yaml
+- services/alert-manager/service.yaml
+- services/alert-manager/hpa.yaml
 
 commonLabels:
   project: costwatch
@@ -27,4 +30,6 @@ images:
 - name: costwatch/resource-scanner
   newTag: latest
 - name: costwatch/cost-analyzer
+  newTag: latest
+- name: costwatch/alert-manager
   newTag: latest
