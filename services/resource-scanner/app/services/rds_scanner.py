@@ -2,7 +2,7 @@ import logging
 from typing import Dict, List, Any
 from datetime import datetime
 
-from app.services.aws_scanner import AWSResourceScanner
+from .aws_scanner import AWSResourceScanner
 
 logger = logging.getLogger(__name__)
 
