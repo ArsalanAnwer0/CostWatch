@@ -4,9 +4,9 @@ from decimal import Decimal
 from datetime import datetime  # ADD THIS IMPORT
 import boto3
 
-from ..models.cost_analysis import OptimizationRecommendation
-from ..models.resource import Resource, EC2Resource, RDSResource
-from ..utils.database import get_db_connection
+from models.cost_analysis import OptimizationRecommendation
+from models.resource import Resource, EC2Resource, RDSResource
+from utils.database import get_db_connection
 
 logger = logging.getLogger(__name__)
 

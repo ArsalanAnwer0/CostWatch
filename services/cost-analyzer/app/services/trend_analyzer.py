@@ -6,8 +6,8 @@ import numpy as np
 from sklearn.linear_model import LinearRegression
 import boto3
 
-from ..models.cost_analysis import CostForecast
-from ..utils.database import get_db_connection
+from models.cost_analysis import CostForecast
+from utils.database import get_db_connection
 
 logger = logging.getLogger(__name__)
 
