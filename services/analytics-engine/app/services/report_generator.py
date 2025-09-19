@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 import json
 import uuid
 
-from ..models.analytics import ReportRequest
-from ..utils.database import execute_query
+from models.analytics import ReportRequest
+from utils.database import execute_query
 
 logger = logging.getLogger(__name__)
 
