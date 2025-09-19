@@ -5,8 +5,9 @@ import uvicorn
 import os
 from typing import Dict, Any
 
-from app.routes import auth, costs, health
-from app.middleware.logging import LoggingMiddleware
+# Use relative imports when running with PYTHONPATH=app
+from routes import auth, costs, health
+from middleware.logging import LoggingMiddleware
 
 # Application metadata
 app = FastAPI(
@@ -57,7 +58,7 @@ async def info() -> Dict[str, Any]:
         "service": "costwatch-api-gateway",
         "version": "1.0.0",
         "environment": os.getenv("ENVIRONMENT", "development"),
-        "python_version": "3.9+",
+        "python_version": "3.13+",
         "framework": "FastAPI"
     }
 
@@ -65,7 +66,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
+        port=8002,
         reload=True,
         log_level="info"
     )

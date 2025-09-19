@@ -1,16 +1,16 @@
 import time
 import logging
+from typing import Callable
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class LoggingMiddleware(BaseHTTPMiddleware):
-    """Custom logging middleware for request/response logging."""
+    """Custom logging middleware for API requests."""
     
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        # Start timing
         start_time = time.time()
         
         # Log request
@@ -28,7 +28,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             f"Processing time: {process_time:.4f}s"
         )
         
-        # Add processing time header
+        # Add processing time to response headers
         response.headers["X-Process-Time"] = str(process_time)
         
         return response

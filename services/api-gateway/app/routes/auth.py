@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 import jwt
 import os
 from datetime import datetime, timedelta
@@ -71,6 +71,10 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+def bypass_auth_for_testing():
+    """Bypass authentication for testing purposes."""
+    return "test-user@costwatch.com"
+
 @router.post("/login", response_model=Token)
 async def login(user_credentials: UserLogin) -> Token:
     """Authenticate user and return access token."""
@@ -116,7 +120,7 @@ async def register(user_data: UserRegister) -> Dict[str, str]:
     return {"message": "User registered successfully", "email": user_data.email}
 
 @router.get("/me")
-async def get_current_user(current_user_email: str = Depends(verify_token)) -> Dict[str, any]:
+async def get_current_user(current_user_email: str = Depends(verify_token)) -> Dict[str, Any]:
     """Get current user information."""
     user = MOCK_USERS.get(current_user_email)
     if not user:
