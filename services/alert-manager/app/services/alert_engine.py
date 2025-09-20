@@ -3,8 +3,8 @@ from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import uuid
 
-from ..models.alert import Alert, AlertRule, AlertSeverity, AlertType
-from ..utils.database import get_db_connection, execute_query
+from models.alert import Alert, AlertRule, AlertSeverity, AlertType
+from utils.database import get_db_connection, execute_query
 
 logger = logging.getLogger(__name__)
 
@@ -314,3 +314,15 @@ class AlertEngine:
         except Exception as e:
             logger.error(f"Failed to get alert history for account {account_id}: {e}")
             return []
+    def __init__(self):
+        self.operators = {
+            'gt': lambda a, b: a > b,
+            'gte': lambda a, b: a >= b,
+            'lt': lambda a, b: a < b,
+            'lte': lambda a, b: a <= b,
+            'eq': lambda a, b: a == b,
+            'ne': lambda a, b: a != b
+        }
+        # Add in-memory storage for testing
+        self.rules_storage = {}
+        self.alerts_history = []

@@ -5,6 +5,10 @@ import uvicorn
 import os
 from typing import Dict, Any
 
+# Fix imports - add path setup 
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 # Use relative imports when running with PYTHONPATH=app
 from routes import auth, costs, health
 from middleware.logging import LoggingMiddleware

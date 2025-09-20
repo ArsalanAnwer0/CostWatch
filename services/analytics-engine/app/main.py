@@ -6,7 +6,12 @@ from typing import Dict, List, Optional, Any
 import json
 import asyncio
 import httpx
+import sys
 
+# Fix imports - add path setup (MUST come before other imports)
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Now import the CORRECT analytics-engine modules (NOT alert-manager modules)
 import services.analytics_service
 import services.ml_predictor  
 import services.report_generator
