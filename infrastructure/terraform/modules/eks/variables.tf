@@ -4,23 +4,23 @@ variable "project_name" {
 }
 
 variable "environment" {
-  description = "Environment name"
+  description = "Environment name (dev, staging, prod)"
   type        = string
 }
 
 variable "cluster_version" {
-  description = "EKS cluster version"
+  description = "Kubernetes version for the EKS cluster"
   type        = string
   default     = "1.28"
 }
 
 variable "cluster_role_arn" {
-  description = "ARN of the EKS cluster role"
+  description = "ARN of the IAM role for the EKS cluster"
   type        = string
 }
 
 variable "node_role_arn" {
-  description = "ARN of the EKS node role"
+  description = "ARN of the IAM role for the EKS node group"
   type        = string
 }
 
@@ -35,7 +35,7 @@ variable "public_subnet_ids" {
 }
 
 variable "node_group_config" {
-  description = "Node group configuration"
+  description = "Configuration for the EKS node group"
   type = object({
     instance_types = list(string)
     capacity_type  = string
@@ -44,24 +44,34 @@ variable "node_group_config" {
     desired_size  = number
     disk_size     = number
   })
-  default = {
-    instance_types = ["t3.medium"]
-    capacity_type  = "ON_DEMAND"
-    min_size      = 1
-    max_size      = 5
-    desired_size  = 2
-    disk_size     = 20
-  }
 }
 
 variable "enabled_cluster_log_types" {
-  description = "List of cluster log types to enable"
+  description = "List of control plane logging types to enable"
   type        = list(string)
-  default     = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+  default     = ["api", "audit", "authenticator"]
+}
+
+variable "endpoint_private_access" {
+  description = "Enable private API server endpoint"
+  type        = bool
+  default     = true
+}
+
+variable "endpoint_public_access" {
+  description = "Enable public API server endpoint"
+  type        = bool
+  default     = true
+}
+
+variable "public_access_cidrs" {
+  description = "List of CIDR blocks that can access the public endpoint"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
 }
 
 variable "tags" {
-  description = "Tags to apply to resources"
+  description = "Additional tags for resources"
   type        = map(string)
   default     = {}
 }

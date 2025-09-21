@@ -4,7 +4,7 @@ variable "vpc_cidr" {
 }
 
 variable "availability_zones" {
-  description = "Availability zones"
+  description = "List of availability zones"
   type        = list(string)
 }
 
@@ -14,7 +14,7 @@ variable "project_name" {
 }
 
 variable "environment" {
-  description = "Environment name"
+  description = "Environment name (dev, staging, prod)"
   type        = string
 }
 
@@ -28,4 +28,10 @@ variable "enable_vpn_gateway" {
   description = "Enable VPN Gateway"
   type        = bool
   default     = false
+}
+
+variable "tags" {
+  description = "Additional tags for resources"
+  type        = map(string)
+  default     = {}
 }

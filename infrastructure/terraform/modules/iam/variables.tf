@@ -1,7 +1,6 @@
 variable "project_name" {
   description = "Name of the project"
   type        = string
-  default     = "costwatch"
 }
 
 variable "environment" {
@@ -12,5 +11,10 @@ variable "environment" {
 variable "region" {
   description = "AWS region"
   type        = string
-  default     = "us-west-2"
+}
+
+variable "tags" {
+  description = "Additional tags for resources"
+  type        = map(string)
+  default     = {}
 }

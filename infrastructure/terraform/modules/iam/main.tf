@@ -1,4 +1,6 @@
-# IAM Roles and Policies for CostWatch Infrastructure
+# Data sources for current AWS info
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
 
 # EKS Cluster Service Role
 resource "aws_iam_role" "eks_cluster_role" {
@@ -18,17 +20,19 @@ resource "aws_iam_role" "eks_cluster_role" {
   })
 
   tags = {
-    Name        = "${var.project_name}-eks-cluster-role"
+    Name        = "${var.project_name}-eks-cluster-role-${var.environment}"
+    Project     = var.project_name
     Environment = var.environment
   }
 }
 
+# Attach required policies to EKS cluster role
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role       = aws_iam_role.eks_cluster_role.name
 }
 
-# EKS Node Group Role
+# EKS Node Group Service Role
 resource "aws_iam_role" "eks_node_role" {
   name = "${var.project_name}-eks-node-role-${var.environment}"
 
@@ -46,11 +50,13 @@ resource "aws_iam_role" "eks_node_role" {
   })
 
   tags = {
-    Name        = "${var.project_name}-eks-node-role"
+    Name        = "${var.project_name}-eks-node-role-${var.environment}"
+    Project     = var.project_name
     Environment = var.environment
   }
 }
 
+# Attach required policies to EKS node role
 resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
   role       = aws_iam_role.eks_node_role.name
@@ -66,7 +72,13 @@ resource "aws_iam_role_policy_attachment" "eks_container_registry_policy" {
   role       = aws_iam_role.eks_node_role.name
 }
 
-# CostWatch Application Role for AWS API Access
+# Additional policy for EBS CSI driver
+resource "aws_iam_role_policy_attachment" "eks_ebs_csi_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+  role       = aws_iam_role.eks_node_role.name
+}
+
+# CostWatch application service role for AWS Cost Explorer access
 resource "aws_iam_role" "costwatch_app_role" {
   name = "${var.project_name}-app-role-${var.environment}"
 
@@ -77,14 +89,15 @@ resource "aws_iam_role" "costwatch_app_role" {
         Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
-          AWS = aws_iam_role.eks_node_role.arn
+          Service = "ec2.amazonaws.com"
         }
       }
     ]
   })
 
   tags = {
-    Name        = "${var.project_name}-app-role"
+    Name        = "${var.project_name}-app-role-${var.environment}"
+    Project     = var.project_name
     Environment = var.environment
   }
 }
@@ -100,132 +113,70 @@ resource "aws_iam_policy" "costwatch_app_policy" {
       {
         Effect = "Allow"
         Action = [
-          "ec2:Describe*",
-          "rds:Describe*",
-          "s3:List*",
-          "s3:Get*",
-          "cloudwatch:Get*",
-          "cloudwatch:List*",
-          "cloudwatch:Describe*",
+          # Cost Explorer permissions
           "ce:GetCostAndUsage",
-          "ce:GetUsageReport",
+          "ce:GetDimensionValues",
           "ce:GetReservationCoverage",
           "ce:GetReservationPurchaseRecommendation",
           "ce:GetReservationUtilization",
-          "ce:GetDimensionValues",
-          "ce:GetRightsizingRecommendation",
-          "pricing:GetProducts",
-          "pricing:GetAttributeValues"
+          "ce:GetUsageReport",
+          "ce:DescribeCostCategoryDefinition",
+          "ce:GetCostCategories",
+          # CloudWatch permissions for monitoring
+          "cloudwatch:GetMetricStatistics",
+          "cloudwatch:ListMetrics",
+          "cloudwatch:PutMetricData",
+          # EC2 permissions for resource scanning
+          "ec2:DescribeInstances",
+          "ec2:DescribeVolumes",
+          "ec2:DescribeSnapshots",
+          "ec2:DescribeImages",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeVpcs",
+          "ec2:DescribeSubnets",
+          # RDS permissions
+          "rds:DescribeDBInstances",
+          "rds:DescribeDBClusters",
+          "rds:DescribeDBSnapshots",
+          # S3 permissions
+          "s3:ListAllMyBuckets",
+          "s3:GetBucketLocation",
+          "s3:GetBucketTagging",
+          "s3:GetBucketVersioning",
+          # SNS permissions for alerts
+          "sns:Publish",
+          "sns:CreateTopic",
+          "sns:Subscribe",
+          "sns:ListTopics",
+          # STS permissions
+          "sts:GetCallerIdentity"
         ]
         Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject"
-        ]
-        Resource = "arn:aws:s3:::${var.project_name}-*/*"
       }
     ]
   })
+
+  tags = {
+    Name        = "${var.project_name}-app-policy-${var.environment}"
+    Project     = var.project_name
+    Environment = var.environment
+  }
 }
 
+# Attach custom policy to application role
 resource "aws_iam_role_policy_attachment" "costwatch_app_policy_attachment" {
   policy_arn = aws_iam_policy.costwatch_app_policy.arn
   role       = aws_iam_role.costwatch_app_role.name
 }
 
-# ECR Repository Access Role
-resource "aws_iam_role" "ecr_access_role" {
-  name = "${var.project_name}-ecr-access-role-${var.environment}"
+# Instance profile for EC2 instances (if needed)
+resource "aws_iam_instance_profile" "costwatch_app_profile" {
+  name = "${var.project_name}-app-profile-${var.environment}"
+  role = aws_iam_role.costwatch_app_role.name
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_policy" "ecr_access_policy" {
-  name = "${var.project_name}-ecr-access-policy-${var.environment}"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage",
-          "ecr:DescribeRepositories",
-          "ecr:DescribeImages",
-          "ecr:BatchDeleteImage",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload",
-          "ecr:PutImage"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "ecr_access_policy_attachment" {
-  policy_arn = aws_iam_policy.ecr_access_policy.arn
-  role       = aws_iam_role.ecr_access_role.name
-}
-
-# CloudWatch Logs Role
-resource "aws_iam_role" "cloudwatch_logs_role" {
-  name = "${var.project_name}-logs-role-${var.environment}"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "logs.amazonaws.com"
-        }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_policy" "cloudwatch_logs_policy" {
-  name = "${var.project_name}-logs-policy-${var.environment}"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents",
-          "logs:DescribeLogGroups",
-          "logs:DescribeLogStreams"
-        ]
-        Resource = "arn:aws:logs:*:*:*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "cloudwatch_logs_policy_attachment" {
-  policy_arn = aws_iam_policy.cloudwatch_logs_policy.arn
-  role       = aws_iam_role.cloudwatch_logs_role.name
+  tags = {
+    Name        = "${var.project_name}-app-profile-${var.environment}"
+    Project     = var.project_name
+    Environment = var.environment
+  }
 }

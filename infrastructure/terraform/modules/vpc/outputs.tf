@@ -14,17 +14,27 @@ output "internet_gateway_id" {
 }
 
 output "public_subnet_ids" {
-  description = "IDs of the public subnets"
+  description = "List of IDs of the public subnets"
   value       = aws_subnet.public[*].id
 }
 
 output "private_subnet_ids" {
-  description = "IDs of the private subnets"
+  description = "List of IDs of the private subnets"
   value       = aws_subnet.private[*].id
 }
 
+output "public_subnet_cidrs" {
+  description = "List of CIDR blocks of the public subnets"
+  value       = aws_subnet.public[*].cidr_block
+}
+
+output "private_subnet_cidrs" {
+  description = "List of CIDR blocks of the private subnets"
+  value       = aws_subnet.private[*].cidr_block
+}
+
 output "nat_gateway_ids" {
-  description = "IDs of the NAT Gateways"
+  description = "List of IDs of the NAT Gateways"
   value       = aws_nat_gateway.main[*].id
 }
 
@@ -34,6 +44,11 @@ output "public_route_table_id" {
 }
 
 output "private_route_table_ids" {
-  description = "IDs of the private route tables"
+  description = "List of IDs of the private route tables"
   value       = aws_route_table.private[*].id
+}
+
+output "availability_zones" {
+  description = "List of availability zones used"
+  value       = var.availability_zones
 }
