@@ -151,3 +151,19 @@ variable "enable_nat_gateway" {
   type        = bool
   default     = true
 }
+# Database Variables
+variable "db_name" {
+  description = "Name of the database"
+  type        = string
+}
+
+variable "db_username" {
+  description = "Database username"
+  type        = string
+}
+
+variable "db_password" {
+  description = "Database password"
+  type        = string
+  sensitive   = true
+}

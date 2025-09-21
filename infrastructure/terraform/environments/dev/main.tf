@@ -1,7 +1,5 @@
 terraform {
   backend "s3" {
-    # Note: This S3 bucket needs to be created first
-    # We'll create this manually or with a separate script
     bucket = "costwatch-terraform-state-dev"
     key    = "dev/terraform.tfstate"
     region = "us-west-2"
@@ -63,17 +61,18 @@ module "vpc" {
   tags               = local.common_tags
 }
 
-# Security Groups Module (if it exists)
-# module "security" {
-#   source = "../../modules/security"
-#
-#   vpc_id       = module.vpc.vpc_id
-#   project_name = var.project_name
-#   environment  = var.environment
-#   tags         = local.common_tags
-#
-#   depends_on = [module.vpc]
-# }
+# Security Groups Module
+module "security" {
+  source = "../../modules/security"
+
+  vpc_id       = module.vpc.vpc_id
+  vpc_cidr     = var.vpc_cidr
+  project_name = var.project_name
+  environment  = var.environment
+  tags         = local.common_tags
+
+  depends_on = [module.vpc]
+}
 
 # EKS Module
 module "eks" {
@@ -104,25 +103,27 @@ module "eks" {
   depends_on = [module.vpc, module.iam]
 }
 
-# RDS Module (when we create it)
-# module "rds" {
-#   source = "../../modules/rds"
-#
-#   vpc_id             = module.vpc.vpc_id
-#   private_subnet_ids = module.vpc.private_subnet_ids
-#   security_group_ids = [module.security.rds_security_group_id]
-#   
-#   project_name      = var.project_name
-#   environment       = var.environment
-#   db_instance_class = var.db_instance_class
-#   # ... other RDS variables
-#
-#   tags = local.common_tags
-#
-#   depends_on = [module.vpc, module.security]
-# }
+# RDS Module
+module "rds" {
+  source = "../../modules/rds"
 
-# Storage Module (if needed)
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+  security_group_ids = [module.security.rds_security_group_id]
+  
+  project_name      = var.project_name
+  environment       = var.environment
+  db_instance_class = var.db_instance_class
+  db_name          = var.db_name
+  db_username      = var.db_username
+  db_password      = var.db_password
+
+  tags = local.common_tags
+
+  depends_on = [module.vpc, module.security]
+}
+
+# Storage Module (if needed for future use)
 # module "storage" {
 #   source = "../../modules/storage"
 #
