@@ -1,0 +1,83 @@
+[run]
+# Coverage.py configuration
+
+# Source directories to measure
+source = services
+
+# Omit these files/directories from coverage
+omit =
+    */tests/*
+    */test_*.py
+    */*_test.py
+    */conftest.py
+    */__pycache__/*
+    */venv/*
+    */env/*
+    */.venv/*
+    */site-packages/*
+    */migrations/*
+    */alembic/*
+
+# Enable branch coverage
+branch = True
+
+# Parallel mode for multi-process testing
+parallel = True
+
+[report]
+# Reporting options
+
+# Precision for coverage percentages
+precision = 2
+
+# Show missing lines
+show_missing = True
+
+# Skip covered files
+skip_covered = False
+
+# Skip empty files
+skip_empty = True
+
+# Fail under this coverage percentage
+fail_under = 70
+
+# Exclude lines from coverage
+exclude_lines =
+    # Standard pragma
+    pragma: no cover
+
+    # Don't complain about missing debug code
+    def __repr__
+    def __str__
+
+    # Don't complain if tests don't hit defensive assertion code
+    raise AssertionError
+    raise NotImplementedError
+
+    # Don't complain if non-runnable code isn't run
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    if typing.TYPE_CHECKING:
+
+    # Don't complain about abstract methods
+    @abstractmethod
+    @abc.abstractmethod
+
+    # Don't complain about ellipsis
+    \.\.\.
+    pass
+
+[html]
+# HTML report configuration
+directory = htmlcov
+title = CostWatch Test Coverage Report
+
+[xml]
+# XML report for CI/CD
+output = coverage.xml
+
+[json]
+# JSON report for programmatic access
+output = coverage.json
+pretty_print = True
