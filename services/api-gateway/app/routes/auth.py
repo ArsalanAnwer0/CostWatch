@@ -1,13 +1,18 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Dict, Optional, Any
 import jwt
 import os
 from datetime import datetime, timedelta
+from passlib.context import CryptContext
+import re
 
 router = APIRouter()
 security = HTTPBearer()
+
+# Password hashing context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Pydantic models
 class UserLogin(BaseModel):
@@ -20,10 +25,33 @@ class UserRegister(BaseModel):
     full_name: str
     company: Optional[str] = None
 
+    @field_validator('password')
+    @classmethod
+    def validate_password_strength(cls, v):
+        """Validate password meets security requirements."""
+        if len(v) < 8:
+            raise ValueError('Password must be at least 8 characters long')
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Password must contain at least one uppercase letter')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Password must contain at least one lowercase letter')
+        if not re.search(r'\d', v):
+            raise ValueError('Password must contain at least one digit')
+        return v
+
 class Token(BaseModel):
     access_token: str
     token_type: str
     expires_in: int
+
+# Helper functions for password hashing
+def hash_password(password: str) -> str:
+    """Hash a password using bcrypt."""
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verify a password against its hash."""
+    return pwd_context.verify(plain_password, hashed_password)
 
 # Mock user database (replace with real database in production)
 MOCK_USERS = {
@@ -32,7 +60,7 @@ MOCK_USERS = {
         "email": "admin@costwatch.com",
         "full_name": "Admin User",
         "company": "CostWatch",
-        "hashed_password": "hashed_admin_password",  # In real app, use proper hashing
+        "hashed_password": hash_password("AdminPass123"),  # Properly hashed password
         "is_active": True
     }
 }
@@ -80,9 +108,9 @@ def bypass_auth_for_testing():
 @router.post("/login", response_model=Token)
 async def login(user_credentials: UserLogin) -> Token:
     """Authenticate user and return access token."""
-    # Mock authentication (replace with real authentication)
+    # Authenticate user with proper password verification
     user = MOCK_USERS.get(user_credentials.email)
-    if not user or user["hashed_password"] != f"hashed_{user_credentials.password}":
+    if not user or not verify_password(user_credentials.password, user["hashed_password"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -102,20 +130,20 @@ async def login(user_credentials: UserLogin) -> Token:
 
 @router.post("/register", response_model=Dict[str, str])
 async def register(user_data: UserRegister) -> Dict[str, str]:
-    """Register new user."""
+    """Register new user with strong password requirements."""
     if user_data.email in MOCK_USERS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
         )
-    
-    # Mock user registration (replace with real database operations)
+
+    # Register user with properly hashed password
     MOCK_USERS[user_data.email] = {
         "id": len(MOCK_USERS) + 1,
         "email": user_data.email,
         "full_name": user_data.full_name,
         "company": user_data.company,
-        "hashed_password": f"hashed_{user_data.password}",  # Use proper hashing
+        "hashed_password": hash_password(user_data.password),
         "is_active": True
     }
     
