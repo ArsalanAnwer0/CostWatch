@@ -1,4 +1,5 @@
 import logging
+import json
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import uuid
@@ -276,7 +277,7 @@ class AlertEngine:
                 alert.severity,
                 alert.message,
                 alert.account_id,
-                str(alert.metadata),  # Convert dict to string for storage
+                json.dumps(alert.metadata) if alert.metadata else None,  # Properly serialize dict to JSON
                 alert.created_at,
                 alert.status
             )
