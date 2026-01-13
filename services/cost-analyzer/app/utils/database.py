@@ -17,11 +17,16 @@ def get_db_connection():
         return None
     
     try:
+        db_password = os.getenv('DATABASE_PASSWORD')
+        if not db_password:
+            logger.error("DATABASE_PASSWORD environment variable is required")
+            return None
+
         return psycopg2.connect(
             host=os.getenv('DATABASE_HOST', 'localhost'),
             database=os.getenv('DATABASE_NAME', 'costwatch_db'),
             user=os.getenv('DATABASE_USER', 'costwatch_user'),
-            password=os.getenv('DATABASE_PASSWORD', 'costwatch_pass123'),
+            password=db_password,
             cursor_factory=RealDictCursor
         )
     except Exception as e:

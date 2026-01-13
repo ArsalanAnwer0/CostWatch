@@ -15,8 +15,10 @@ router = APIRouter()
 # Initialize service client for microservice communication
 service_client = ServiceClient()
 
-# Get AWS account ID from environment or use default for testing
-AWS_ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID", "741448937760")
+# Get AWS account ID from environment (required)
+AWS_ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID")
+if not AWS_ACCOUNT_ID:
+    raise ValueError("AWS_ACCOUNT_ID environment variable is required")
 
 # Pydantic models
 class CostData(BaseModel):
