@@ -1,148 +1,133 @@
-# CostWatch Terraform Variables for Dev Environment
+variable "aws_region" {
+  description = "AWS region for resources"
+  type        = string
+  default     = "us-west-2"
+}
 
 variable "environment" {
-  description = "Environment name"
+  description = "Environment name (dev, staging, prod)"
   type        = string
 }
 
 variable "project_name" {
   description = "Name of the project"
   type        = string
+  default     = "costwatch"
 }
 
-variable "aws_region" {
-  description = "AWS region"
-  type        = string
-}
-
-# VPC Variables
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
+  default     = "10.0.0.0/16"
 }
 
 variable "availability_zones" {
-  description = "List of availability zones"
+  description = "Availability zones"
   type        = list(string)
+  default     = ["us-west-2a", "us-west-2b", "us-west-2c"]
 }
 
-variable "public_subnet_cidrs" {
-  description = "CIDR blocks for public subnets"
-  type        = list(string)
-}
-
-variable "private_subnet_cidrs" {
-  description = "CIDR blocks for private subnets"
-  type        = list(string)
-}
-
-variable "database_subnet_cidrs" {
-  description = "CIDR blocks for database subnets"
-  type        = list(string)
-}
-
-# EKS Variables
-variable "cluster_version" {
-  description = "Kubernetes version"
-  type        = string
-}
-
-variable "node_instance_types" {
-  description = "EC2 instance types for worker nodes"
-  type        = list(string)
-}
-
-variable "min_nodes" {
-  description = "Minimum number of worker nodes"
-  type        = number
-}
-
-variable "max_nodes" {
-  description = "Maximum number of worker nodes"
-  type        = number
-}
-
-variable "desired_nodes" {
-  description = "Desired number of worker nodes"
-  type        = number
-}
-
-variable "disk_size" {
-  description = "Disk size for worker nodes"
-  type        = number
-}
-
-# RDS Variables
-variable "db_instance_class" {
-  description = "RDS instance class"
-  type        = string
-}
-
-variable "db_allocated_storage" {
-  description = "RDS allocated storage"
-  type        = number
-}
-
-variable "db_engine_version" {
-  description = "RDS engine version"
-  type        = string
-}
-
-variable "db_backup_retention_period" {
-  description = "RDS backup retention period"
-  type        = number
-}
-
-variable "db_backup_window" {
-  description = "RDS backup window"
-  type        = string
-}
-
-variable "db_maintenance_window" {
-  description = "RDS maintenance window"
-  type        = string
-}
-
-variable "db_deletion_protection" {
-  description = "RDS deletion protection"
+variable "enable_nat_gateway" {
+  description = "Enable NAT Gateway for private subnets"
   type        = bool
+  default     = true
 }
 
-variable "db_skip_final_snapshot" {
-  description = "Skip final snapshot when deleting RDS"
-  type        = bool
-}
-
-variable "db_multi_az" {
-  description = "Enable Multi-AZ for RDS"
+variable "enable_vpn_gateway" {
+  description = "Enable VPN Gateway"
   type        = bool
   default     = false
 }
 
-# Security Variables
-variable "allowed_cidr_blocks" {
-  description = "CIDR blocks allowed to access resources"
-  type        = list(string)
-}
-
-variable "enable_waf" {
-  description = "Enable WAF"
-  type        = bool
-}
-
-# Monitoring Variables
-variable "enable_cloudwatch_logs" {
-  description = "Enable CloudWatch logs"
-  type        = bool
-}
-
 variable "log_retention_days" {
-  description = "CloudWatch log retention days"
+  description = "Number of days to retain CloudWatch logs"
   type        = number
+  default     = 30
 }
 
-# Tags
-variable "common_tags" {
-  description = "Common tags for all resources"
-  type        = map(string)
+variable "alert_email_addresses" {
+  description = "List of email addresses for alerts"
+  type        = list(string)
+  default     = ["admin@costwatch.com"]
+}
+
+variable "cost_anomaly_email" {
+  description = "Email address for cost anomaly alerts"
+  type        = string
+  default     = "admin@costwatch.com"
+}
+
+# Database variables
+variable "db_name" {
+  description = "Name of the database"
+  type        = string
+  default     = "costwatch"
+}
+
+variable "db_username" {
+  description = "Username for the database"
+  type        = string
+  default     = "costwatch_user"
+}
+
+variable "db_password" {
+  description = "Password for the database"
+  type        = string
+  sensitive   = true
+  default     = "change-me-in-production"
+}
+
+variable "db_instance_class" {
+  description = "RDS instance class"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+# EKS variables
+variable "eks_cluster_version" {
+  description = "EKS cluster version"
+  type        = string
+  default     = "1.28"
+}
+
+variable "eks_node_instance_types" {
+  description = "EKS node instance types"
+  type        = list(string)
+  default     = ["t3.medium"]
+}
+
+variable "eks_node_capacity_type" {
+  description = "EKS node capacity type"
+  type        = string
+  default     = "ON_DEMAND"
+}
+
+variable "eks_node_group_min_size" {
+  description = "Minimum number of nodes in EKS node group"
+  type        = number
+  default     = 1
+}
+
+variable "eks_node_group_max_size" {
+  description = "Maximum number of nodes in EKS node group"
+  type        = number
+  default     = 5
+}
+
+variable "eks_node_group_desired_size" {
+  description = "Desired number of nodes in EKS node group"
+  type        = number
+  default     = 2
+}
+
+variable "eks_node_disk_size" {
+  description = "Disk size for EKS nodes"
+  type        = number
+  default     = 20
+}
+
+variable "eks_enabled_log_types" {
+  description = "List of EKS cluster log types to enable"
+  type        = list(string)
+  default     = ["api", "audit", "authenticator"]
 }
