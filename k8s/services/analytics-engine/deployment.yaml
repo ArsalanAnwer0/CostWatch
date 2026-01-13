@@ -30,7 +30,7 @@ spec:
       - name: analytics-engine
         image: costwatch/analytics-engine:latest
         ports:
-        - containerPort: 5002
+        - containerPort: 8003
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: false
@@ -91,14 +91,14 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 5002
+            port: 8003
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
         readinessProbe:
           httpGet:
             path: /ready
-            port: 5002
+            port: 8003
           initialDelaySeconds: 15
           periodSeconds: 5
           timeoutSeconds: 3

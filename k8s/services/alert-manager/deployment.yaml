@@ -30,7 +30,7 @@ spec:
       - name: alert-manager
         image: costwatch/alert-manager:latest
         ports:
-        - containerPort: 5001
+        - containerPort: 8004
         securityContext:
           allowPrivilegeEscalation: false
           readOnlyRootFilesystem: false
@@ -127,14 +127,14 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 5001
+            port: 8004
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
         readinessProbe:
           httpGet:
             path: /ready
-            port: 5001
+            port: 8004
           initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 3
