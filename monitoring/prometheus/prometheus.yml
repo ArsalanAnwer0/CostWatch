@@ -13,26 +13,26 @@ alerting:
           - alert-manager-service:8004
 
 scrape_configs:
-  # API Gateway metrics
-  - job_name: 'api-gateway'
+  # Resource Scanner metrics
+  - job_name: 'resource-scanner'
     static_configs:
-      - targets: ['api-gateway-service:8000']
+      - targets: ['resource-scanner-service:8000']
     metrics_path: '/metrics'
-    scrape_interval: 10s
+    scrape_interval: 30s
 
-  # Cost Analyzer metrics  
+  # Cost Analyzer metrics
   - job_name: 'cost-analyzer'
     static_configs:
       - targets: ['cost-analyzer-service:8001']
     metrics_path: '/metrics'
     scrape_interval: 15s
 
-  # Resource Scanner metrics
-  - job_name: 'resource-scanner'
+  # API Gateway metrics
+  - job_name: 'api-gateway'
     static_configs:
-      - targets: ['resource-scanner-service:8002']
+      - targets: ['api-gateway-service:8002']
     metrics_path: '/metrics'
-    scrape_interval: 30s
+    scrape_interval: 10s
 
   # Analytics Engine metrics
   - job_name: 'analytics-engine'
@@ -45,6 +45,35 @@ scrape_configs:
   - job_name: 'alert-manager'
     static_configs:
       - targets: ['alert-manager-service:8004']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # PostgreSQL Exporter
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'costwatch-postgres'
+
+  # Redis Exporter
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'costwatch-redis'
+
+  # NGINX Ingress Controller
+  - job_name: 'nginx-ingress'
+    static_configs:
+      - targets: ['nginx-ingress-controller:10254']
     metrics_path: '/metrics'
     scrape_interval: 10s
 
