@@ -1,0 +1,90 @@
+groups:
+  - name: costwatch_services
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected in {{ $labels.service }}"
+          description: "Error rate is {{ $value }} requests/sec for service {{ $labels.service }}"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency detected in {{ $labels.service }}"
+          description: "P95 latency is {{ $value }}s for service {{ $labels.service }}"
+
+      - alert: ServiceDown
+        expr: up{job=~"costwatch-.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} has been down for more than 2 minutes"
+
+      - alert: HighMemoryUsage
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage in {{ $labels.pod }}"
+          description: "Memory usage is {{ $value | humanizePercentage }} for pod {{ $labels.pod }}"
+
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage in {{ $labels.pod }}"
+          description: "CPU usage is {{ $value | humanizePercentage }} for pod {{ $labels.pod }}"
+
+  - name: costwatch_database
+    interval: 60s
+    rules:
+      - alert: DatabaseConnectionPoolExhausted
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.9
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "Database connections at {{ $value | humanizePercentage }} capacity"
+
+      - alert: SlowQueries
+        expr: rate(pg_stat_statements_mean_time_seconds[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query time is {{ $value }}s"
+
+  - name: costwatch_business
+    interval: 300s
+    rules:
+      - alert: CostThresholdExceeded
+        expr: aws_cost_daily > 1000
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Daily AWS cost threshold exceeded"
+          description: "Daily cost is ${{ $value }} exceeding threshold"
+
+      - alert: CostAnomalyDetected
+        expr: abs(aws_cost_daily - aws_cost_daily_avg) / aws_cost_daily_avg > 0.3
+        for: 2h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cost anomaly detected"
+          description: "Cost deviation is {{ $value | humanizePercentage }} from average"
