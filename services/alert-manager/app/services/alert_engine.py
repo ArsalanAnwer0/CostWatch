@@ -20,6 +20,9 @@ class AlertEngine:
             'eq': lambda a, b: a == b,
             'ne': lambda a, b: a != b
         }
+        # In-memory storage for testing
+        self.rules_storage = {}
+        self.alerts_history = []
     
     def create_rule(self, rule: AlertRule) -> bool:
         """Create new alert rule in database"""
@@ -314,15 +317,3 @@ class AlertEngine:
         except Exception as e:
             logger.error(f"Failed to get alert history for account {account_id}: {e}")
             return []
-    def __init__(self):
-        self.operators = {
-            'gt': lambda a, b: a > b,
-            'gte': lambda a, b: a >= b,
-            'lt': lambda a, b: a < b,
-            'lte': lambda a, b: a <= b,
-            'eq': lambda a, b: a == b,
-            'ne': lambda a, b: a != b
-        }
-        # Add in-memory storage for testing
-        self.rules_storage = {}
-        self.alerts_history = []
