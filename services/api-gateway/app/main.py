@@ -23,18 +23,21 @@ app = FastAPI(
 )
 
 # Security middleware
+allowed_hosts = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 app.add_middleware(
-    TrustedHostMiddleware, 
-    allowed_hosts=["*"]  # Configure properly in production
+    TrustedHostMiddleware,
+    allowed_hosts=allowed_hosts
 )
 
-# CORS middleware
+# CORS middleware - configure based on environment
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure properly in production
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "X-Request-ID"],
+    expose_headers=["X-Request-ID"],
 )
 
 # Custom logging middleware

@@ -20,11 +20,25 @@ spec:
         tier: analytics
     spec:
       serviceAccountName: costwatch-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: analytics-engine
         image: costwatch/analytics-engine:latest
         ports:
-        - containerPort: 5002
+        - containerPort: 8003
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+              - ALL
           name: http
         env:
         - name: ENVIRONMENT
@@ -74,17 +88,27 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "1000m"
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8003
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 30
+          timeoutSeconds: 5
         livenessProbe:
           httpGet:
             path: /health
-            port: 5002
-          initialDelaySeconds: 30
+            port: 8003
+          initialDelaySeconds: 0
           periodSeconds: 10
+          failureThreshold: 3
           timeoutSeconds: 5
         readinessProbe:
           httpGet:
             path: /ready
-            port: 5002
-          initialDelaySeconds: 15
+            port: 8003
+          initialDelaySeconds: 0
           periodSeconds: 5
-          timeoutSeconds: 3
+          failureThreshold: 3
+          timeoutSeconds: 5

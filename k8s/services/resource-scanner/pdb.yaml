@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: resource-scanner-pdb
+  namespace: costwatch
+  labels:
+    app: resource-scanner
+    component: backend
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: resource-scanner
+  unhealthyPodEvictionPolicy: AlwaysAllow

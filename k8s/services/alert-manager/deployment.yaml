@@ -20,11 +20,25 @@ spec:
         tier: alerts
     spec:
       serviceAccountName: costwatch-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: alert-manager
         image: costwatch/alert-manager:latest
         ports:
-        - containerPort: 5001
+        - containerPort: 8004
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+              - ALL
           name: http
         env:
         - name: ENVIRONMENT
@@ -110,17 +124,27 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8004
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 30
+          timeoutSeconds: 5
         livenessProbe:
           httpGet:
             path: /health
-            port: 5001
-          initialDelaySeconds: 30
+            port: 8004
+          initialDelaySeconds: 0
           periodSeconds: 10
+          failureThreshold: 3
           timeoutSeconds: 5
         readinessProbe:
           httpGet:
             path: /ready
-            port: 5001
-          initialDelaySeconds: 10
+            port: 8004
+          initialDelaySeconds: 0
           periodSeconds: 5
-          timeoutSeconds: 3
+          failureThreshold: 3
+          timeoutSeconds: 5

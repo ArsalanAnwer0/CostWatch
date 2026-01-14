@@ -1,4 +1,5 @@
 import logging
+import json
 from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
 import uuid
@@ -20,6 +21,9 @@ class AlertEngine:
             'eq': lambda a, b: a == b,
             'ne': lambda a, b: a != b
         }
+        # In-memory storage for testing
+        self.rules_storage = {}
+        self.alerts_history = []
     
     def create_rule(self, rule: AlertRule) -> bool:
         """Create new alert rule in database"""
@@ -273,7 +277,7 @@ class AlertEngine:
                 alert.severity,
                 alert.message,
                 alert.account_id,
-                str(alert.metadata),  # Convert dict to string for storage
+                json.dumps(alert.metadata) if alert.metadata else None,  # Properly serialize dict to JSON
                 alert.created_at,
                 alert.status
             )
@@ -314,15 +318,3 @@ class AlertEngine:
         except Exception as e:
             logger.error(f"Failed to get alert history for account {account_id}: {e}")
             return []
-    def __init__(self):
-        self.operators = {
-            'gt': lambda a, b: a > b,
-            'gte': lambda a, b: a >= b,
-            'lt': lambda a, b: a < b,
-            'lte': lambda a, b: a <= b,
-            'eq': lambda a, b: a == b,
-            'ne': lambda a, b: a != b
-        }
-        # Add in-memory storage for testing
-        self.rules_storage = {}
-        self.alerts_history = []

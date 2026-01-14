@@ -1,0 +1,318 @@
+groups:
+  - name: costwatch_services
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected in {{ $labels.service }}"
+          description: "Error rate is {{ $value }} requests/sec for service {{ $labels.service }}"
+
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency detected in {{ $labels.service }}"
+          description: "P95 latency is {{ $value }}s for service {{ $labels.service }}"
+
+      - alert: ServiceDown
+        expr: up{job=~"costwatch-.*"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} has been down for more than 2 minutes"
+
+      - alert: HighMemoryUsage
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage in {{ $labels.pod }}"
+          description: "Memory usage is {{ $value | humanizePercentage }} for pod {{ $labels.pod }}"
+
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage in {{ $labels.pod }}"
+          description: "CPU usage is {{ $value | humanizePercentage }} for pod {{ $labels.pod }}"
+
+  - name: costwatch_database
+    interval: 60s
+    rules:
+      - alert: DatabaseConnectionPoolExhausted
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.9
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "Database connections at {{ $value | humanizePercentage }} capacity"
+
+      - alert: SlowQueries
+        expr: rate(pg_stat_statements_mean_time_seconds[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query time is {{ $value }}s"
+
+  - name: costwatch_business
+    interval: 300s
+    rules:
+      - alert: CostThresholdExceeded
+        expr: aws_cost_daily > 1000
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Daily AWS cost threshold exceeded"
+          description: "Daily cost is ${{ $value }} exceeding threshold"
+
+      - alert: CostAnomalyDetected
+        expr: abs(aws_cost_daily - aws_cost_daily_avg) / aws_cost_daily_avg > 0.3
+        for: 2h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cost anomaly detected"
+          description: "Cost deviation is {{ $value | humanizePercentage }} from average"
+
+  - name: costwatch_infrastructure
+    interval: 60s
+    rules:
+      - alert: PodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Pod {{ $labels.pod }} is crash looping"
+          description: "Pod has restarted {{ $value }} times in last 15 minutes"
+
+      - alert: PodNotReady
+        expr: kube_pod_status_phase{phase!="Running"} == 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod {{ $labels.pod }} not ready"
+          description: "Pod has been in {{ $labels.phase }} state for more than 10 minutes"
+
+      - alert: PersistentVolumeFillingUp
+        expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes < 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PV {{ $labels.persistentvolumeclaim }} filling up"
+          description: "Only {{ $value | humanizePercentage }} space remaining"
+
+      - alert: NodeDiskPressure
+        expr: kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node {{ $labels.node }} under disk pressure"
+          description: "Node is experiencing disk pressure"
+
+      - alert: NodeMemoryPressure
+        expr: kube_node_status_condition{condition="MemoryPressure",status="true"} == 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node {{ $labels.node }} under memory pressure"
+          description: "Node is experiencing memory pressure"
+
+  - name: costwatch_redis
+    interval: 60s
+    rules:
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis instance down"
+          description: "Redis instance {{ $labels.instance }} is down"
+
+      - alert: RedisMemoryHigh
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage at {{ $value | humanizePercentage }}"
+
+      - alert: RedisHighConnectionCount
+        expr: redis_connected_clients > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Redis connection count"
+          description: "{{ $value }} clients connected to Redis"
+
+      - alert: RedisKeyEvictionRateHigh
+        expr: rate(redis_evicted_keys_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Redis key eviction rate"
+          description: "{{ $value }} keys/sec being evicted"
+
+  - name: costwatch_application
+    interval: 30s
+    rules:
+      - alert: HighRequestRate
+        expr: sum(rate(http_requests_total[5m])) by (service) > 1000
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "High request rate on {{ $labels.service }}"
+          description: "Request rate is {{ $value }} req/sec"
+
+      - alert: LowRequestRate
+        expr: sum(rate(http_requests_total[15m])) by (service) < 1
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Suspiciously low request rate on {{ $labels.service }}"
+          description: "Request rate is {{ $value }} req/sec - possible issue"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High p99 response time on {{ $labels.service }}"
+          description: "P99 response time is {{ $value }}s"
+
+      - alert: DatabaseQuerySlow
+        expr: avg(rate(http_request_duration_seconds_sum{endpoint=~".*database.*"}[5m])) by (service) > 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow database queries on {{ $labels.service }}"
+          description: "Average database query time is {{ $value }}s"
+
+      - alert: TooManyGoroutines
+        expr: go_goroutines > 1000
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Too many goroutines in {{ $labels.job }}"
+          description: "{{ $value }} goroutines running"
+
+      - alert: APIRateLimitApproaching
+        expr: sum(rate(http_requests_total{status="429"}[5m])) by (service) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Rate limit being hit on {{ $labels.service }}"
+          description: "{{ $value }} rate-limited requests/sec"
+
+      - alert: UnauthorizedAccessAttempts
+        expr: sum(rate(http_requests_total{status="401"}[5m])) by (service) > 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of unauthorized access attempts on {{ $labels.service }}"
+          description: "{{ $value }} unauthorized requests/sec"
+
+      - alert: ClientErrorsHigh
+        expr: sum(rate(http_requests_total{status=~"4.."}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High client error rate on {{ $labels.service }}"
+          description: "{{ $value | humanizePercentage }} of requests returning 4xx"
+
+  - name: costwatch_postgres_detailed
+    interval: 60s
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "PostgreSQL instance {{ $labels.instance }} cannot be reached"
+
+      - alert: PostgreSQLTooManyConnections
+        expr: sum(pg_stat_activity_count) > 200
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Too many PostgreSQL connections"
+          description: "{{ $value }} active connections"
+
+      - alert: PostgreSQLDeadlocks
+        expr: rate(pg_stat_database_deadlocks[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL deadlocks detected"
+          description: "{{ $value }} deadlocks/sec in database {{ $labels.datname }}"
+
+      - alert: PostgreSQLHighRollbackRate
+        expr: rate(pg_stat_database_xact_rollback[5m]) / rate(pg_stat_database_xact_commit[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High transaction rollback rate"
+          description: "{{ $value | humanizePercentage }} of transactions rolling back"
+
+      - alert: PostgreSQLReplicationLag
+        expr: pg_replication_lag_seconds > 60
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PostgreSQL replication lag"
+          description: "Replication lag is {{ $value }}s"
+
+      - alert: PostgreSQLTableBloat
+        expr: pg_table_bloat_ratio > 0.3
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "High table bloat in PostgreSQL"
+          description: "Table {{ $labels.table }} has {{ $value | humanizePercentage }} bloat"
+
+      - alert: PostgreSQLCacheHitRatioLow
+        expr: pg_stat_database_blks_hit / (pg_stat_database_blks_hit + pg_stat_database_blks_read) < 0.9
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low PostgreSQL cache hit ratio"
+          description: "Cache hit ratio is {{ $value | humanizePercentage }}"

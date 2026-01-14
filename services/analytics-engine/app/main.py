@@ -32,8 +32,10 @@ def create_app():
     report_generator = services.report_generator.ReportGenerator()
     service_client = services.service_client.ServiceClient()
     
-    # AWS Account ID from environment
-    AWS_ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID", "741448937760")
+    # AWS Account ID from environment (required)
+    AWS_ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID")
+    if not AWS_ACCOUNT_ID:
+        raise ValueError("AWS_ACCOUNT_ID environment variable is required")
     
     @app.route('/health', methods=['GET'])
     def health_check():

@@ -20,12 +20,26 @@ spec:
         tier: api
     spec:
       serviceAccountName: costwatch-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: api-gateway
         image: costwatch/api-gateway:latest
         ports:
-        - containerPort: 8000
+        - containerPort: 8002
           name: http
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+              - ALL
         env:
         - name: ENVIRONMENT
           valueFrom:
@@ -79,15 +93,27 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8002
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 30
+          timeoutSeconds: 3
         livenessProbe:
           httpGet:
             path: /health
-            port: 8000
-          initialDelaySeconds: 30
+            port: 8002
+          initialDelaySeconds: 0
           periodSeconds: 10
+          failureThreshold: 3
+          timeoutSeconds: 3
         readinessProbe:
           httpGet:
             path: /health
-            port: 8000
-          initialDelaySeconds: 10
+            port: 8002
+          initialDelaySeconds: 0
           periodSeconds: 5
+          failureThreshold: 3
+          timeoutSeconds: 3
