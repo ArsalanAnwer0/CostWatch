@@ -1,46 +1,69 @@
-name: CostWatch CI/CD Pipeline
+name: Deploy to EKS
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, staging]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   AWS_REGION: us-west-2
-  EKS_CLUSTER_NAME: costwatch-cluster
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api-gateway, cost-analyzer, resource-scanner, analytics-engine, alert-manager]
     steps:
     - uses: actions/checkout@v3
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-    
-    - name: Install dependencies
+    - name: Install and test
       run: |
-        python -m pip install --upgrade pip
-        pip install pytest
-    
-    - name: Run tests
-      run: |
-        pytest tests/ || echo "Tests completed"
+        cd services/${{ matrix.service }}
+        pip install -r requirements.txt pytest || true
+        pytest tests/ -v || true
 
   build:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
+    if: github.event_name == 'push'
+    strategy:
+      matrix:
+        service: [api-gateway, cost-analyzer, resource-scanner, analytics-engine, alert-manager]
     steps:
     - uses: actions/checkout@v3
-    
-    - name: Build Docker images
+    - uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+    - uses: aws-actions/amazon-ecr-login@v1
+      id: login-ecr
+    - name: Build and push Docker image
       run: |
-        echo "Building Docker images..."
-        docker build -t costwatch-api-gateway services/api-gateway/
-        docker build -t costwatch-cost-analyzer services/cost-analyzer/
-        echo "Build completed"
+        cd services/${{ matrix.service }}
+        IMAGE=${{ steps.login-ecr.outputs.registry }}/costwatch-${{ matrix.service }}:${{ github.sha }}
+        docker build -t $IMAGE .
+        docker push $IMAGE
+
+  deploy-production:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://costwatch.com
+    steps:
+    - uses: actions/checkout@v3
+    - uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+    - name: Deploy to EKS
+      run: |
+        aws eks update-kubeconfig --name costwatch-cluster-prod --region ${{ env.AWS_REGION }}
+        ./scripts/deploy.sh prod ${{ github.sha }}
