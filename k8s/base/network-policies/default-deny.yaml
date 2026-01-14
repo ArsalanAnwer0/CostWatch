@@ -1,0 +1,14 @@
+# Default Deny All Network Policy
+# Denies all ingress and egress traffic by default
+# Services must explicitly allow traffic with specific policies
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: costwatch
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
