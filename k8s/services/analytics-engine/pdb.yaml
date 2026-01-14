@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: analytics-engine-pdb
+  namespace: costwatch
+  labels:
+    app: analytics-engine
+    component: backend
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: analytics-engine
+  unhealthyPodEvictionPolicy: AlwaysAllow

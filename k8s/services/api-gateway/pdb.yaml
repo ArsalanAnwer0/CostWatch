@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-gateway-pdb
+  namespace: costwatch
+  labels:
+    app: api-gateway
+    component: backend
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  unhealthyPodEvictionPolicy: AlwaysAllow

@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cost-analyzer-pdb
+  namespace: costwatch
+  labels:
+    app: cost-analyzer
+    component: backend
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cost-analyzer
+  unhealthyPodEvictionPolicy: AlwaysAllow
