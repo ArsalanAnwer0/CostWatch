@@ -16,8 +16,8 @@ import app.services.analytics_service as analytics_service_module
 import app.services.ml_predictor as ml_predictor_module
 import app.services.report_generator as report_generator_module
 import app.services.service_client as service_client_module
-import app.analytics_models as analytics_models
-import app.auth_utils as auth_utils
+import app.models.analytics as analytics_models
+import app.utils.auth as auth_utils
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
