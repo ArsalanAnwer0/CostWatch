@@ -14,10 +14,10 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # Load environment variables from the .env file
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.env'))
 
-from services.aws_scanner import AWSResourceScanner
-from services.ec2_scanner import EC2Scanner
-from services.rds_scanner import RDSScanner
-from services.s3_scanner import S3Scanner
+from app.services.aws_scanner import AWSResourceScanner
+from app.services.ec2_scanner import EC2Scanner
+from app.services.rds_scanner import RDSScanner
+from app.services.s3_scanner import S3Scanner
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
