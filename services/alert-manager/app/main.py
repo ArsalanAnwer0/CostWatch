@@ -6,11 +6,11 @@ from typing import Dict, List, Optional
 import asyncio
 import json
 
-import services.notification_service as notification_service_module
-import services.alert_engine as alert_engine_module
-import services.service_client as service_client_module
-import models.alert as alert_models
-import utils.auth as auth_utils
+import app.services.notification_service as notification_service_module
+import app.services.alert_engine as alert_engine_module
+import app.services.service_client as service_client_module
+import app.models.alert as alert_models
+import app.utils.auth as auth_utils
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
