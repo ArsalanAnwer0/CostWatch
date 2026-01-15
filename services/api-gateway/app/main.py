@@ -9,9 +9,9 @@ from typing import Dict, Any
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Use relative imports when running with PYTHONPATH=app
-from routes import auth, costs, health
-from middleware.logging import LoggingMiddleware
+# Use absolute imports with app prefix for proper module resolution
+from app.routes import auth, costs, health
+from app.middleware.logging import LoggingMiddleware
 
 # Application metadata
 app = FastAPI(
