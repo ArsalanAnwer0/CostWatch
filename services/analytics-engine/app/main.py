@@ -12,12 +12,12 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Now import the CORRECT analytics-engine modules (NOT alert-manager modules)
-import services.analytics_service
-import services.ml_predictor  
-import services.report_generator
-import services.service_client
-import models.analytics
-import utils.auth
+import app.services.analytics_service as analytics_service_module
+import app.services.ml_predictor as ml_predictor_module
+import app.services.report_generator as report_generator_module
+import app.services.service_client as service_client_module
+import app.analytics_models as analytics_models
+import app.auth_utils as auth_utils
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -27,10 +27,10 @@ def create_app():
     app = Flask(__name__)
     
     # Initialize services
-    analytics_service = services.analytics_service.AnalyticsService()
-    ml_predictor = services.ml_predictor.MLPredictor()
-    report_generator = services.report_generator.ReportGenerator()
-    service_client = services.service_client.ServiceClient()
+    analytics_service = analytics_service_module.AnalyticsService()
+    ml_predictor = ml_predictor_module.MLPredictor()
+    report_generator = report_generator_module.ReportGenerator()
+    service_client = service_client_module.ServiceClient()
     
     # AWS Account ID from environment (default to test account if not set)
     AWS_ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID", "000000000000")
@@ -72,7 +72,7 @@ def create_app():
         """Analyze cost trends and patterns using real AWS data"""
         try:
             # Skip API key check for testing
-            current_user = utils.auth.bypass_auth_for_testing()
+            current_user = auth_utils.bypass_auth_for_testing()
             
             data = request.get_json() or {}
             account_id = data.get('account_id', AWS_ACCOUNT_ID)
@@ -84,7 +84,7 @@ def create_app():
                 end_date = datetime.utcnow().date().strftime('%Y-%m-%d')
                 start_date = (datetime.utcnow().date() - timedelta(days=30)).strftime('%Y-%m-%d')
             
-            query = models.analytics.AnalyticsQuery(
+            query = analytics_models.AnalyticsQuery(
                 account_id=account_id,
                 start_date=start_date,
                 end_date=end_date,
@@ -118,7 +118,7 @@ def create_app():
         """Generate ML-based cost predictions using historical AWS data"""
         try:
             # Skip API key check for testing
-            current_user = utils.auth.bypass_auth_for_testing()
+            current_user = auth_utils.bypass_auth_for_testing()
             
             data = request.get_json() or {}
             account_id = data.get('account_id', AWS_ACCOUNT_ID)
@@ -135,7 +135,7 @@ def create_app():
                 end_date.strftime('%Y-%m-%d')
             ))
             
-            request_obj = models.analytics.PredictionRequest(
+            request_obj = analytics_models.PredictionRequest(
                 account_id=account_id,
                 prediction_type=prediction_type,
                 time_horizon=time_horizon,
@@ -165,7 +165,7 @@ def create_app():
         """Generate business insights from real AWS cost data"""
         try:
             # Skip API key check for testing
-            current_user = utils.auth.bypass_auth_for_testing()
+            current_user = auth_utils.bypass_auth_for_testing()
             
             data = request.get_json() or {}
             account_id = data.get('account_id', AWS_ACCOUNT_ID)
@@ -208,7 +208,7 @@ def create_app():
         """Generate comprehensive analytics reports and store in S3"""
         try:
             # Skip API key check for testing
-            current_user = utils.auth.bypass_auth_for_testing()
+            current_user = auth_utils.bypass_auth_for_testing()
             
             data = request.get_json() or {}
             account_id = data.get('account_id', AWS_ACCOUNT_ID)
@@ -216,7 +216,7 @@ def create_app():
             period = data.get('period', 'monthly')
             include_predictions = data.get('include_predictions', True)
             
-            report_request = models.analytics.ReportRequest(
+            report_request = analytics_models.ReportRequest(
                 account_id=account_id,
                 report_type=report_type,
                 period=period,
@@ -247,7 +247,7 @@ def create_app():
         """Get comprehensive dashboard data using real AWS cost data"""
         try:
             # Skip API key check for testing
-            current_user = utils.auth.bypass_auth_for_testing()
+            current_user = auth_utils.bypass_auth_for_testing()
             
             # Get query parameters
             period = request.args.get('period', 'last_30_days')
@@ -290,7 +290,7 @@ def create_app():
         """Get industry benchmarks and comparisons using real AWS data"""
         try:
             # Skip API key check for testing
-            current_user = utils.auth.bypass_auth_for_testing()
+            current_user = auth_utils.bypass_auth_for_testing()
             
             industry = request.args.get('industry', 'technology')
             company_size = request.args.get('company_size', 'medium')
@@ -324,7 +324,7 @@ def create_app():
         """Detect cost anomalies using ML algorithms on real AWS data"""
         try:
             # Skip API key check for testing
-            current_user = utils.auth.bypass_auth_for_testing()
+            current_user = auth_utils.bypass_auth_for_testing()
             
             days = request.args.get('days', 30, type=int)
             sensitivity = request.args.get('sensitivity', 'medium')
@@ -358,7 +358,7 @@ def create_app():
     def check_services_health():
         """Check health of all dependent services"""
         try:
-            current_user = utils.auth.bypass_auth_for_testing()
+            current_user = auth_utils.bypass_auth_for_testing()
             
             cost_analyzer_healthy = asyncio.run(service_client.health_check_cost_analyzer())
             s3_healthy = True  # Skip S3 check for now
