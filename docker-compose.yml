@@ -1,3 +1,14 @@
+# CostWatch Docker Compose Configuration
+# This file defines all microservices for the CostWatch application
+#
+# Quick Start:
+#   docker-compose up -d                    # Start all services
+#   docker-compose logs -f                  # View logs
+#   docker-compose down                     # Stop all services
+#
+# For faster local testing without healthchecks:
+#   docker-compose -f docker-compose.simple.yml up
+#
 # version: '3.8'
 
 services:
@@ -228,6 +239,27 @@ services:
       - costwatch-network
     restart: unless-stopped
 
+  # Frontend Service (React)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: costwatch-frontend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8002
+      - REACT_APP_ENV=development
+    ports:
+      - "3000:3000"
+    networks:
+      - costwatch-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
@@ -244,6 +276,7 @@ services:
       - cost-analyzer
       - analytics-engine
       - alert-manager
+      - frontend
     networks:
       - costwatch-network
     restart: unless-stopped
