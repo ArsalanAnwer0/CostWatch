@@ -64,7 +64,7 @@ credentials/
 config/secrets/
 
 # Docker
-.dockerignore
+# (removed .dockerignore - should be committed)
 
 # Ansible
 *.retry
