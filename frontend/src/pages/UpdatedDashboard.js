@@ -7,6 +7,7 @@ import CostCard from '../components/CostCard';
 import CostChart from '../components/CostChart';
 import ResourceTable from '../components/ResourceTable';
 import OptimizationCard from '../components/OptimizationCard';
+import LoadingSpinner from '../components/LoadingSpinner';
 import {
   mockCostSummary,
   mockCostTrends,
@@ -54,12 +55,7 @@ function UpdatedDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="dashboard-loading">
-        <div className="spinner"></div>
-        <p>Loading dashboard...</p>
-      </div>
-    );
+    return <LoadingSpinner size="large" text="Loading dashboard..." fullPage />;
   }
 
   const renderOverview = () => (
