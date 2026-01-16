@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import os
 import logging
 from datetime import datetime
@@ -25,6 +26,9 @@ logger = logging.getLogger(__name__)
 
 # Create Flask app
 app = Flask(__name__)
+
+# Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Configure app
 app.config['JSON_SORT_KEYS'] = False
