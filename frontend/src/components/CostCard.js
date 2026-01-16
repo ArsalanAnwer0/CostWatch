@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import './CostCard.css';
+import '../styles/animations.css';
 
 function CostCard({ title, amount, change, icon, trend = 'neutral' }) {
   const formatCurrency = (value) => {

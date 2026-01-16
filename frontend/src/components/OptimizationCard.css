@@ -5,11 +5,13 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border-left: 4px solid #6b7280;
   transition: all 0.3s ease;
+  animation: slideUp 0.4s ease-out;
 }
 
 .optimization-card:hover {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
+  border-left-width: 6px;
 }
 
 .severity-high {
@@ -131,8 +133,13 @@
 
 .btn-implement:hover {
   background: #2563eb;
+  transform: scale(1.02);
 }
 
 .btn-implement:active {
-  transform: translateY(1px);
+  transform: scale(0.98);
+}
+
+.btn-view-details:active {
+  transform: scale(0.98);
 }
