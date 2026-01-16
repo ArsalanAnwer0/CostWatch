@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from datetime import datetime, timedelta
 import os
 import logging
@@ -18,7 +19,10 @@ logger = logging.getLogger(__name__)
 
 def create_app():
     app = Flask(__name__)
-    
+
+    # Enable CORS for all routes
+    CORS(app, resources={r"/*": {"origins": "*"}})
+
     # Initialize services
     notification_service = notification_service_module.NotificationService()
     alert_engine = alert_engine_module.AlertEngine()
