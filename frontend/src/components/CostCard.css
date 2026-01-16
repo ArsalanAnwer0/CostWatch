@@ -1,0 +1,61 @@
+.cost-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  animation: slideUp 0.4s ease-out;
+}
+
+.cost-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.cost-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.cost-card-icon {
+  font-size: 24px;
+}
+
+.cost-card-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0;
+}
+
+.cost-card-amount {
+  font-size: 32px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 10px;
+  transition: color 0.2s ease;
+}
+
+.cost-card:hover .cost-card-amount {
+  color: #3b82f6;
+}
+
+.cost-card-change {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.trend-icon {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.change-label {
+  color: #6b7280;
+  font-weight: normal;
+}

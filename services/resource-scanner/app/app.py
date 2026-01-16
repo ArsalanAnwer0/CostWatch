@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import os
 import logging
 from datetime import datetime
@@ -14,10 +15,10 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 # Load environment variables from the .env file
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.env'))
 
-from services.aws_scanner import AWSResourceScanner
-from services.ec2_scanner import EC2Scanner
-from services.rds_scanner import RDSScanner
-from services.s3_scanner import S3Scanner
+from app.services.aws_scanner import AWSResourceScanner
+from app.services.ec2_scanner import EC2Scanner
+from app.services.rds_scanner import RDSScanner
+from app.services.s3_scanner import S3Scanner
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -25,6 +26,9 @@ logger = logging.getLogger(__name__)
 
 # Create Flask app
 app = Flask(__name__)
+
+# Enable CORS for all routes
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Configure app
 app.config['JSON_SORT_KEYS'] = False

@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from datetime import datetime, timedelta
 import os
 import logging
@@ -6,11 +7,11 @@ from typing import Dict, List, Optional
 import asyncio
 import json
 
-import services.notification_service as notification_service_module
-import services.alert_engine as alert_engine_module
-import services.service_client as service_client_module
-import models.alert as alert_models
-import utils.auth as auth_utils
+import app.services.notification_service as notification_service_module
+import app.services.alert_engine as alert_engine_module
+import app.services.service_client as service_client_module
+import app.models.alert as alert_models
+import app.utils.auth as auth_utils
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -18,16 +19,19 @@ logger = logging.getLogger(__name__)
 
 def create_app():
     app = Flask(__name__)
-    
+
+    # Enable CORS for all routes
+    CORS(app, resources={r"/*": {"origins": "*"}})
+
     # Initialize services
     notification_service = notification_service_module.NotificationService()
     alert_engine = alert_engine_module.AlertEngine()
     service_client = service_client_module.ServiceClient()
     
-    # AWS Account ID from environment (required)
-    AWS_ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID")
-    if not AWS_ACCOUNT_ID:
-        raise ValueError("AWS_ACCOUNT_ID environment variable is required")
+    # AWS Account ID from environment (default to test account if not set)
+    AWS_ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID", "000000000000")
+    if AWS_ACCOUNT_ID == "000000000000":
+        logger.warning("AWS_ACCOUNT_ID not set, using default test account. Set AWS_ACCOUNT_ID for production use.")
     
     @app.route('/health', methods=['GET'])
     def health_check():

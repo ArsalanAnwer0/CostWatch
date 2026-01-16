@@ -22,8 +22,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Python packages from builder
-COPY --from=builder /root/.local /root/.local
+# Copy Python packages from builder to system location
+COPY --from=builder /root/.local /usr/local
 
 # Copy application code
 COPY app/ ./app/
@@ -32,8 +32,8 @@ COPY app/ ./app/
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
 USER appuser
 
-# Make sure scripts in .local are usable
-ENV PATH=/root/.local/bin:$PATH
+# Set Python path for module imports
+ENV PYTHONPATH=/app:$PYTHONPATH
 ENV PORT=8002
 EXPOSE 8002
 

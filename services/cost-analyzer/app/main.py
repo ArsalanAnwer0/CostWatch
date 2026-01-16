@@ -13,11 +13,11 @@ from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.env'))
 
-from services.cost_calculator import CostCalculator
-from services.optimizer import ResourceOptimizer
-from services.trend_analyzer import TrendAnalyzer
-from utils.database import get_db_connection
-from utils.auth import verify_api_key
+from app.services.cost_calculator import CostCalculator
+from app.services.optimizer import ResourceOptimizer
+from app.services.trend_analyzer import TrendAnalyzer
+from app.utils.database import get_db_connection
+from app.utils.auth import verify_api_key
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
