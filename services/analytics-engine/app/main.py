@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from datetime import datetime, timedelta
 import os
 import logging
@@ -25,7 +26,10 @@ logger = logging.getLogger(__name__)
 
 def create_app():
     app = Flask(__name__)
-    
+
+    # Enable CORS for all routes
+    CORS(app, resources={r"/*": {"origins": "*"}})
+
     # Initialize services
     analytics_service = analytics_service_module.AnalyticsService()
     ml_predictor = ml_predictor_module.MLPredictor()
