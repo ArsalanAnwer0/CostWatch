@@ -7,6 +7,7 @@ export { default as CostCard } from './CostCard';
 export { default as CostChart } from './CostChart';
 export { default as ResourceTable } from './ResourceTable';
 export { default as OptimizationCard } from './OptimizationCard';
+export { default as CloudProviderFilter } from './CloudProviderFilter';
 
 // UI Components
 export { default as LoadingSpinner } from './LoadingSpinner';

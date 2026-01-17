@@ -24,18 +24,6 @@ function LoginPage() {
     setLoading(true);
     setError('');
 
-    // For demo: auto-login with any credentials
-    setTimeout(() => {
-      localStorage.setItem('token', 'demo-token-' + Date.now());
-      localStorage.setItem('user', JSON.stringify({
-        email: formData.email,
-        name: 'Demo User',
-        aws_account_id: '123456789012'
-      }));
-      navigate('/dashboard');
-    }, 500);
-
-    /* Production login code (commented for demo):
     try {
       const response = await fetch('http://localhost:8002/auth/login', {
         method: 'POST',
@@ -60,7 +48,6 @@ function LoginPage() {
     } finally {
       setLoading(false);
     }
-    */
   };
 
   return (
