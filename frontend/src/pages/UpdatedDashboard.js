@@ -9,14 +9,14 @@ import ResourceTable from '../components/ResourceTable';
 import OptimizationCard from '../components/OptimizationCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {
-  mockCostSummary,
-  mockCostTrends,
-  mockResourceBreakdown,
-  mockEC2Instances,
-  mockRDSInstances,
-  mockS3Buckets,
-  mockOptimizations,
-  mockAlerts,
+  costSummary,
+  costTrends,
+  resourceBreakdown,
+  ec2Instances,
+  rdsInstances,
+  s3Buckets,
+  optimizations,
+  alerts,
 } from '../services/mockData';
 import './UpdatedDashboard.css';
 
@@ -27,18 +27,73 @@ function UpdatedDashboard() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({ name: 'Demo User', email: 'demo@costwatch.com' });
 
-  useEffect(() => {
-    // Simulate loading
-    setTimeout(() => setLoading(false), 500);
+  // State for API data (fallback to mock data if API fails)
+  const [costSummary, setCostSummary] = useState(costSummary);
+  const [costTrends, setCostTrends] = useState(costTrends);
+  const [resourceBreakdown, setResourceBreakdown] = useState(resourceBreakdown);
+  const [ec2Instances, setEC2Instances] = useState(ec2Instances);
+  const [rdsInstances, setRDSInstances] = useState(rdsInstances);
+  const [s3Buckets, setS3Buckets] = useState(s3Buckets);
+  const [optimizations, setOptimizations] = useState(optimizations);
+  const [alerts, setAlerts] = useState(alerts);
 
-    // Check auth (optional for demo)
+  useEffect(() => {
+    // Check auth
     const token = localStorage.getItem('token');
     if (!token) {
-      // For demo, create a mock token
-      localStorage.setItem('token', 'demo-token-12345');
-      localStorage.setItem('user', JSON.stringify(user));
+      navigate('/login');
+      return;
     }
+
+    // Load user from localStorage
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+
+    // Fetch data from backend
+    fetchDashboardData(token);
   }, []);
+
+  const fetchDashboardData = async (token) => {
+    setLoading(true);
+
+    try {
+      // Try to fetch from backend API
+      const headers = {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      };
+
+      // Fetch cost summary
+      try {
+        const costResponse = await fetch('http://localhost:8002/costs/summary?period=30d', { headers });
+        if (costResponse.ok) {
+          const costData = await costResponse.json();
+          if (costData) setCostSummary(costData);
+        }
+      } catch (err) {
+        console.log('Using mock cost data');
+      }
+
+      // Fetch resources (EC2, RDS, S3)
+      try {
+        const ec2Response = await fetch('http://localhost:8000/scan/ec2', { headers });
+        if (ec2Response.ok) {
+          const ec2Data = await ec2Response.json();
+          if (ec2Data?.resources) setEC2Instances(ec2Data.resources);
+        }
+      } catch (err) {
+        console.log('Using mock EC2 data');
+      }
+
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      // Keep using mock data as fallback
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -64,25 +119,25 @@ function UpdatedDashboard() {
       <div className="cost-cards-grid">
         <CostCard
           title="Current Month Cost"
-          amount={mockCostSummary.currentMonth}
-          change={mockCostSummary.percentChange}
+          amount={costSummary.currentMonth}
+          change={costSummary.percentChange}
           icon="💰"
-          trend={mockCostSummary.percentChange < 0 ? 'down' : 'up'}
+          trend={costSummary.percentChange < 0 ? 'down' : 'up'}
         />
         <CostCard
           title="Last Month Cost"
-          amount={mockCostSummary.lastMonth}
+          amount={costSummary.lastMonth}
           icon="📊"
         />
         <CostCard
           title="Savings Opportunity"
-          amount={mockCostSummary.savingsOpportunity}
+          amount={costSummary.savingsOpportunity}
           icon="💡"
           trend="down"
         />
         <CostCard
           title="Total Resources"
-          amount={mockCostSummary.totalResources}
+          amount={costSummary.totalResources}
           icon="🖥️"
         />
       </div>
@@ -93,7 +148,7 @@ function UpdatedDashboard() {
           <h2>Cost Trends (Last 30 Days)</h2>
           <p className="section-subtitle">Daily AWS spending pattern</p>
         </div>
-        <CostChart data={mockCostTrends} height={250} />
+        <CostChart data={costTrends} height={250} />
       </div>
 
       {/* Service Breakdown */}
@@ -103,7 +158,7 @@ function UpdatedDashboard() {
           <p className="section-subtitle">Distribution of AWS costs</p>
         </div>
         <div className="service-breakdown-grid">
-          {mockResourceBreakdown.map((service) => (
+          {resourceBreakdown.map((service) => (
             <div key={service.service} className="service-card">
               <div className="service-header">
                 <h3>{service.service}</h3>
@@ -131,7 +186,7 @@ function UpdatedDashboard() {
           <p className="section-subtitle">Recommended cost-saving actions</p>
         </div>
         <div className="optimizations-grid">
-          {mockOptimizations.slice(0, 3).map((opt) => (
+          {optimizations.slice(0, 3).map((opt) => (
             <OptimizationCard
               key={opt.id}
               optimization={opt}
@@ -152,26 +207,26 @@ function UpdatedDashboard() {
             className={selectedService === 'ec2' ? 'tab-active' : 'tab'}
             onClick={() => setSelectedService('ec2')}
           >
-            EC2 ({mockEC2Instances.length})
+            EC2 ({ec2Instances.length})
           </button>
           <button
             className={selectedService === 'rds' ? 'tab-active' : 'tab'}
             onClick={() => setSelectedService('rds')}
           >
-            RDS ({mockRDSInstances.length})
+            RDS ({rdsInstances.length})
           </button>
           <button
             className={selectedService === 's3' ? 'tab-active' : 'tab'}
             onClick={() => setSelectedService('s3')}
           >
-            S3 ({mockS3Buckets.length})
+            S3 ({s3Buckets.length})
           </button>
         </div>
       </div>
 
-      {selectedService === 'ec2' && <ResourceTable resources={mockEC2Instances} type="ec2" />}
-      {selectedService === 'rds' && <ResourceTable resources={mockRDSInstances} type="rds" />}
-      {selectedService === 's3' && <ResourceTable resources={mockS3Buckets} type="s3" />}
+      {selectedService === 'ec2' && <ResourceTable resources={ec2Instances} type="ec2" />}
+      {selectedService === 'rds' && <ResourceTable resources={rdsInstances} type="rds" />}
+      {selectedService === 's3' && <ResourceTable resources={s3Buckets} type="s3" />}
     </div>
   );
 
@@ -180,11 +235,11 @@ function UpdatedDashboard() {
       <div className="section-header">
         <h2>All Optimization Recommendations</h2>
         <p className="section-subtitle">
-          Total potential savings: ${mockOptimizations.reduce((sum, opt) => sum + opt.monthlySavings, 0).toFixed(2)}/month
+          Total potential savings: ${optimizations.reduce((sum, opt) => sum + opt.monthlySavings, 0).toFixed(2)}/month
         </p>
       </div>
       <div className="optimizations-list">
-        {mockOptimizations.map((opt) => (
+        {optimizations.map((opt) => (
           <OptimizationCard
             key={opt.id}
             optimization={opt}
@@ -199,10 +254,10 @@ function UpdatedDashboard() {
     <div className="alerts-section">
       <div className="section-header">
         <h2>Alerts & Notifications</h2>
-        <p className="section-subtitle">{mockAlerts.filter(a => !a.read).length} unread alerts</p>
+        <p className="section-subtitle">{alerts.filter(a => !a.read).length} unread alerts</p>
       </div>
       <div className="alerts-list">
-        {mockAlerts.map((alert) => (
+        {alerts.map((alert) => (
           <div key={alert.id} className={`alert-card alert-${alert.severity} ${alert.read ? 'read' : 'unread'}`}>
             <div className="alert-header">
               <span className="alert-icon">
@@ -272,8 +327,8 @@ function UpdatedDashboard() {
             className={activeTab === 'alerts' ? 'sidebar-item active' : 'sidebar-item'}
             onClick={() => setActiveTab('alerts')}
           >
-            🔔 Alerts {mockAlerts.filter(a => !a.read).length > 0 && (
-              <span className="badge">{mockAlerts.filter(a => !a.read).length}</span>
+            🔔 Alerts {alerts.filter(a => !a.read).length > 0 && (
+              <span className="badge">{alerts.filter(a => !a.read).length}</span>
             )}
           </button>
         </aside>
