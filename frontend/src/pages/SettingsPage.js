@@ -1,7 +1,7 @@
 /**
  * Settings Page - Manage Cloud Accounts
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AddCloudAccountModal from '../components/AddCloudAccountModal';
 import './SettingsPage.css';
@@ -9,26 +9,142 @@ import './SettingsPage.css';
 function SettingsPage() {
   const navigate = useNavigate();
   const [showAddModal, setShowAddModal] = useState(false);
-  const [cloudAccounts, setCloudAccounts] = useState([
-    // Mock data for now
-    { id: 1, provider: 'aws', name: 'Production AWS', status: 'connected' },
-    { id: 2, provider: 'azure', name: 'Development Azure', status: 'connected' },
-  ]);
+  const [cloudAccounts, setCloudAccounts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleAddAccount = (account) => {
-    // Add new account to list
-    const newAccount = {
-      id: Date.now(),
-      ...account,
-      status: 'connected',
-    };
-    setCloudAccounts([...cloudAccounts, newAccount]);
-    setShowAddModal(false);
+  // Fetch cloud accounts on mount
+  useEffect(() => {
+    fetchCloudAccounts();
+  }, []);
+
+  const fetchCloudAccounts = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      const response = await fetch('http://localhost:8002/accounts', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCloudAccounts(data);
+      } else if (response.status === 401) {
+        navigate('/login');
+      } else {
+        console.error('Failed to fetch cloud accounts');
+      }
+    } catch (err) {
+      console.error('Error fetching cloud accounts:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDeleteAccount = (id) => {
-    if (window.confirm('Are you sure you want to remove this cloud account?')) {
-      setCloudAccounts(cloudAccounts.filter(acc => acc.id !== id));
+  const handleAddAccount = async (accountData) => {
+    try {
+      const token = localStorage.getItem('token');
+
+      // Prepare credentials based on provider
+      let credentials = {};
+      if (accountData.provider === 'aws') {
+        credentials = {
+          access_key_id: accountData.awsAccessKey,
+          secret_access_key: accountData.awsSecretKey,
+          region: accountData.awsRegion,
+        };
+      } else if (accountData.provider === 'azure') {
+        credentials = {
+          subscription_id: accountData.azureSubscriptionId,
+          tenant_id: accountData.azureTenantId,
+          client_id: accountData.azureClientId,
+          client_secret: accountData.azureClientSecret,
+        };
+      } else if (accountData.provider === 'gcp') {
+        credentials = {
+          project_id: accountData.gcpProjectId,
+          service_account_key: accountData.gcpServiceAccountKey,
+        };
+      }
+
+      const response = await fetch('http://localhost:8002/accounts', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: accountData.name,
+          provider: accountData.provider,
+          description: accountData.description || '',
+          credentials: credentials,
+        }),
+      });
+
+      if (response.ok) {
+        const newAccount = await response.json();
+        setCloudAccounts([...cloudAccounts, newAccount]);
+        setShowAddModal(false);
+      } else {
+        const error = await response.json();
+        alert(`Failed to add account: ${error.detail || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Error adding cloud account:', err);
+      alert('Failed to add cloud account. Please try again.');
+    }
+  };
+
+  const handleDeleteAccount = async (id) => {
+    if (!window.confirm('Are you sure you want to remove this cloud account?')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8002/accounts/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok || response.status === 204) {
+        setCloudAccounts(cloudAccounts.filter(acc => acc.id !== id));
+      } else {
+        alert('Failed to delete account');
+      }
+    } catch (err) {
+      console.error('Error deleting cloud account:', err);
+      alert('Failed to delete account. Please try again.');
+    }
+  };
+
+  const handleScanAccount = async (id, provider) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:8002/accounts/${id}/scan`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`Resource scan initiated for ${provider.toUpperCase()} account!`);
+      } else {
+        alert('Failed to initiate scan');
+      }
+    } catch (err) {
+      console.error('Error scanning account:', err);
+      alert('Failed to initiate scan. Please try again.');
     }
   };
 
@@ -67,7 +183,11 @@ function SettingsPage() {
           </button>
         </div>
 
-        {cloudAccounts.length === 0 ? (
+        {loading ? (
+          <div className="loading-state">
+            <p>Loading cloud accounts...</p>
+          </div>
+        ) : cloudAccounts.length === 0 ? (
           <div className="empty-state">
             <p>No cloud accounts connected</p>
             <button className="btn-primary" onClick={() => setShowAddModal(true)}>
@@ -89,7 +209,7 @@ function SettingsPage() {
                   </span>
                 </div>
                 <div className="account-actions">
-                  <button className="btn-secondary" onClick={() => alert('Scan initiated!')}>
+                  <button className="btn-secondary" onClick={() => handleScanAccount(account.id, account.provider)}>
                     Scan Resources
                   </button>
                   <button className="btn-danger" onClick={() => handleDeleteAccount(account.id)}>

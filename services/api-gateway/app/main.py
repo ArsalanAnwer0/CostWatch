@@ -10,7 +10,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Use absolute imports with app prefix for proper module resolution
-from app.routes import auth, costs, health
+from app.routes import auth, costs, health, cloud_accounts
 from app.middleware.logging import LoggingMiddleware
 
 # Application metadata
@@ -47,6 +47,7 @@ app.add_middleware(LoggingMiddleware)
 app.include_router(health.router, prefix="/health", tags=["Health"])
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(costs.router, prefix="/costs", tags=["Cost Analysis"])
+app.include_router(cloud_accounts.router, prefix="/accounts", tags=["Cloud Accounts"])
 
 @app.get("/")
 async def root() -> Dict[str, str]:
