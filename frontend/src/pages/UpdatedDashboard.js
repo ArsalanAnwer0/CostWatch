@@ -8,34 +8,46 @@ import CostChart from '../components/CostChart';
 import ResourceTable from '../components/ResourceTable';
 import OptimizationCard from '../components/OptimizationCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import CloudProviderFilter from '../components/CloudProviderFilter';
 import {
-  costSummary,
-  costTrends,
-  resourceBreakdown,
-  ec2Instances,
-  rdsInstances,
-  s3Buckets,
-  optimizations,
-  alerts,
+  costSummary as mockCostSummary,
+  costTrends as mockCostTrends,
+  resourceBreakdown as mockResourceBreakdown,
+  ec2Instances as mockEC2Instances,
+  rdsInstances as mockRDSInstances,
+  s3Buckets as mockS3Buckets,
+  optimizations as mockOptimizations,
+  alerts as mockAlerts,
 } from '../services/mockData';
+import {
+  mockMultiCloudData,
+  filterResourcesByProvider,
+  calculateMultiCloudSummary,
+  generateProviderBreakdown,
+} from '../services/multiCloudMockData';
 import './UpdatedDashboard.css';
 
 function UpdatedDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedService, setSelectedService] = useState('ec2');
+  const [selectedProvider, setSelectedProvider] = useState('all');
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({ name: 'Demo User', email: 'demo@costwatch.com' });
 
   // State for API data (fallback to mock data if API fails)
-  const [costSummary, setCostSummary] = useState(costSummary);
-  const [costTrends, setCostTrends] = useState(costTrends);
-  const [resourceBreakdown, setResourceBreakdown] = useState(resourceBreakdown);
-  const [ec2Instances, setEC2Instances] = useState(ec2Instances);
-  const [rdsInstances, setRDSInstances] = useState(rdsInstances);
-  const [s3Buckets, setS3Buckets] = useState(s3Buckets);
-  const [optimizations, setOptimizations] = useState(optimizations);
-  const [alerts, setAlerts] = useState(alerts);
+  const [costSummary, setCostSummary] = useState(mockCostSummary);
+  const [costTrends, setCostTrends] = useState(mockCostTrends);
+  const [resourceBreakdown, setResourceBreakdown] = useState(mockResourceBreakdown);
+  const [ec2Instances, setEC2Instances] = useState(mockEC2Instances);
+  const [rdsInstances, setRDSInstances] = useState(mockRDSInstances);
+  const [s3Buckets, setS3Buckets] = useState(mockS3Buckets);
+  const [optimizations, setOptimizations] = useState(mockOptimizations);
+  const [alerts, setAlerts] = useState(mockAlerts);
+
+  // Multi-cloud state
+  const [multiCloudResources, setMultiCloudResources] = useState(mockMultiCloudData.resources);
+  const [multiCloudSummary, setMultiCloudSummary] = useState(mockMultiCloudData.summary);
 
   useEffect(() => {
     // Check auth
@@ -109,12 +121,38 @@ function UpdatedDashboard() {
     alert(`✅ Implementing: ${optimization.title}\n\nThis would apply the optimization in production.`);
   };
 
+  const handleProviderChange = (provider) => {
+    setSelectedProvider(provider);
+
+    // Filter resources and recalculate summary
+    const filtered = filterResourcesByProvider(mockMultiCloudData.resources, provider);
+    setMultiCloudResources(filtered);
+
+    const summary = calculateMultiCloudSummary(filtered);
+    setMultiCloudSummary(summary);
+
+    // Update cost summary with filtered data
+    setCostSummary({
+      currentMonth: summary.totalCost,
+      lastMonth: summary.totalCost * 0.92,
+      percentChange: 8.5,
+      savingsOpportunity: summary.totalCost * 0.15,
+      totalResources: summary.total,
+    });
+  };
+
   if (loading) {
     return <LoadingSpinner size="large" text="Loading dashboard..." fullPage />;
   }
 
   const renderOverview = () => (
     <div className="overview-section">
+      {/* Cloud Provider Filter */}
+      <CloudProviderFilter
+        selectedProvider={selectedProvider}
+        onProviderChange={handleProviderChange}
+      />
+
       {/* Cost Summary Cards */}
       <div className="cost-cards-grid">
         <CostCard

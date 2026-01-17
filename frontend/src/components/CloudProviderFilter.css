@@ -1,0 +1,57 @@
+.cloud-provider-filter {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.provider-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.provider-btn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.provider-btn.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1e40af;
+}
+
+.provider-icon {
+  font-size: 18px;
+}
+
+.provider-label {
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cloud-provider-filter {
+    flex-wrap: wrap;
+  }
+
+  .provider-btn {
+    flex: 1 1 calc(50% - 6px);
+    min-width: calc(50% - 6px);
+  }
+}
