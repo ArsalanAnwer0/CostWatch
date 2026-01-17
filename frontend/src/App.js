@@ -4,6 +4,7 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import UpdatedDashboard from './pages/UpdatedDashboard';
+import SettingsPage from './pages/SettingsPage';
 import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
@@ -21,6 +22,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <UpdatedDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />

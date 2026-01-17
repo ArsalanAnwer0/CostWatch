@@ -51,6 +51,22 @@
   background: #2563eb;
 }
 
+.btn-settings {
+  padding: 10px 20px;
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-settings:hover {
+  background: #4b5563;
+}
+
 .user-menu {
   display: flex;
   align-items: center;

@@ -292,6 +292,9 @@ function UpdatedDashboard() {
           <button className="btn-scan" onClick={handleScanResources}>
             🔄 Scan Resources
           </button>
+          <button className="btn-settings" onClick={() => navigate('/settings')}>
+            ⚙️ Settings
+          </button>
           <div className="user-menu">
             <span className="user-name">{user.name}</span>
             <button className="btn-logout" onClick={handleLogout}>
