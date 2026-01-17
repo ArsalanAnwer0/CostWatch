@@ -1,12 +1,56 @@
 # CostWatch 💰
 
-Smart cloud cost optimization platform that helps companies reduce AWS spending by 35% through intelligent monitoring and automated recommendations.
+**Multi-Cloud Cost Optimization Platform** - Reduce cloud spending across AWS, Azure, and GCP by up to 35% through intelligent monitoring and automated recommendations.
 
-**✨ Now 100% Functional** - Complete with working frontend dashboard, mock data, and full backend API integration!
+**✨ BETA RELEASE - Fully Functional!**
+- ✅ Multi-cloud dashboard (AWS, Azure, GCP)
+- ✅ Cloud account management
+- ✅ Provider-specific and unified views
+- ✅ Real-time cost tracking
+- ✅ Working backend APIs
+- ✅ Authentication & route protection
+
+## 🚀 Quick Start (5 Minutes)
+
+Get CostWatch running locally in just a few steps!
+
+### Option 1: Frontend Only (Fastest - Works Immediately!)
+```bash
+# Clone and run frontend
+git clone https://github.com/ArsalanAnwer0/CostWatch.git
+cd CostWatch/frontend
+npm install
+npm start
+
+# Open http://localhost:3000
+# Login with ANY email/password (demo mode)
+# Explore the multi-cloud dashboard!
+```
+
+### Option 2: Full Stack with Docker
+```bash
+# Start all services
+docker-compose up -d
+
+# Verify services are healthy
+docker-compose ps
+
+# Frontend: http://localhost:3000
+# API Gateway: http://localhost:8002/docs
+```
+
+### What You Can Do Right Now
+- ✅ Browse multi-cloud dashboard (AWS, Azure, GCP)
+- ✅ Filter costs by cloud provider
+- ✅ Add mock cloud accounts in Settings
+- ✅ View resource breakdown and costs
+- ✅ See optimization recommendations
+
+---
 
 ## Project Overview
 
-CostWatch solves the cloud waste crisis by providing real-time AWS cost monitoring, automated waste detection, and intelligent optimization recommendations. Built with enterprise-grade microservices architecture and modern DevOps practices.
+CostWatch is a **multi-cloud cost optimization platform** that helps companies reduce spending across AWS, Azure, and GCP. It provides real-time monitoring, automated waste detection, and intelligent optimization recommendations. Built with enterprise-grade microservices architecture and modern DevOps practices.
 
 ## Business Impact
 
@@ -42,11 +86,18 @@ Companies waste millions on cloud infrastructure because they lack visibility in
 
 ## Key Features
 
+### Multi-Cloud Support
+- **Unified Dashboard**: View costs from AWS, Azure, and GCP in one place
+- **Provider Filtering**: Switch between "All Clouds", AWS-only, Azure-only, or GCP-only views
+- **Cloud Account Management**: Add and manage multiple cloud provider accounts
+- **Provider-Agnostic Models**: Consistent resource representation across all clouds
+
 ### Cost Optimization
-- Real-time cost tracking across all AWS services
-- Waste detection for idle EC2 instances and unattached EBS volumes
+- Real-time cost tracking across all cloud providers
+- Waste detection for idle compute instances and unattached storage
 - Right-sizing recommendations based on actual usage patterns
 - Budget forecasting with machine learning predictions
+- Cross-cloud cost comparison
 
 ### Intelligence and Analytics
 - Historical cost trend analysis and anomaly detection
