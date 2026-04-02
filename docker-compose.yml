@@ -1,296 +1,131 @@
-# CostWatch Docker Compose Configuration
-# This file defines all microservices for the CostWatch application
-#
-# Quick Start:
-#   docker-compose up -d                    # Start all services
-#   docker-compose logs -f                  # View logs
-#   docker-compose down                     # Stop all services
-#
-# For faster local testing without healthchecks:
-#   docker-compose -f docker-compose.simple.yml up
-#
-# version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
     container_name: costwatch-postgres
     environment:
-      POSTGRES_DB: costwatch
-      POSTGRES_USER: costwatch_user
-      POSTGRES_PASSWORD: costwatch_password
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_DB: ${POSTGRES_DB:-costwatch}
+      POSTGRES_USER: ${POSTGRES_USER:-costwatch_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-costwatch_password}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./database/schemas/01_core.sql:/docker-entrypoint-initdb.d/01_core.sql
+      - ./database/schemas/02_costs.sql:/docker-entrypoint-initdb.d/02_costs.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U costwatch_user -d costwatch"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-costwatch_user} -d ${POSTGRES_DB:-costwatch}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - costwatch-network
 
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: costwatch-redis
-    ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - costwatch-network
-
-  # Resource Scanner Service (Port 8000)
-  resource-scanner:
-    build:
-      context: ./services/resource-scanner
-      dockerfile: Dockerfile
-    container_name: costwatch-resource-scanner
-    environment:
-      - ENVIRONMENT=development
-      - DATABASE_URL=postgresql://costwatch_user:costwatch_password@postgres:5432/costwatch
-      - REDIS_URL=redis://redis:6379/1
-      - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=mock-access-key
-      - AWS_SECRET_ACCESS_KEY=mock-secret-key
-      - FLASK_ENV=development
-      - PORT=8000
-    ports:
-      - "8000:8000"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    volumes:
-      - ./services/resource-scanner/app:/app/app:ro
-    networks:
-      - costwatch-network
-    restart: unless-stopped
-
-  # Cost Analyzer Service (Port 8001)
-  cost-analyzer:
-    build:
-      context: ./services/cost-analyzer
-      dockerfile: Dockerfile
-    container_name: costwatch-cost-analyzer
-    environment:
-      - ENVIRONMENT=development
-      - DATABASE_URL=postgresql://costwatch_user:costwatch_password@postgres:5432/costwatch
-      - REDIS_URL=redis://redis:6379/2
-      - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=mock-access-key
-      - AWS_SECRET_ACCESS_KEY=mock-secret-key
-      - PORT=8001
-      - RESOURCE_SCANNER_URL=http://resource-scanner:8000
-    ports:
-      - "8001:8001"
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      resource-scanner:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    volumes:
-      - ./services/cost-analyzer/app:/app/app:ro
-    networks:
-      - costwatch-network
-    restart: unless-stopped
-
-  # API Gateway Service (Port 8002)
+  # API Gateway — auth and routing
   api-gateway:
     build:
       context: ./services/api-gateway
       dockerfile: Dockerfile
     container_name: costwatch-api-gateway
-    environment:
-      - ENVIRONMENT=development
-      - DATABASE_URL=postgresql://costwatch_user:costwatch_password@postgres:5432/costwatch
-      - REDIS_URL=redis://redis:6379/0
-      - RESOURCE_SCANNER_URL=http://resource-scanner:8000
-      - COST_ANALYZER_URL=http://cost-analyzer:8001
-      - ANALYTICS_ENGINE_URL=http://analytics-engine:8003
-      - ALERT_MANAGER_URL=http://alert-manager:8004
-      - JWT_SECRET_KEY=dev-secret-key-change-in-production
-      - CORS_ORIGINS=http://localhost:3000,http://localhost:8080
-      - PORT=8002
     ports:
       - "8002:8002"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-costwatch}
+      - POSTGRES_USER=${POSTGRES_USER:-costwatch_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-costwatch_password}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-secret-key-change-in-production}
+      - RESOURCE_SCANNER_URL=http://resource-scanner:8000
+      - COST_SERVICE_URL=http://cost-service:8001
+      - ENVIRONMENT=${ENVIRONMENT:-development}
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      resource-scanner:
-        condition: service_healthy
-      cost-analyzer:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
-      interval: 30s
-      timeout: 10s
+      interval: 15s
+      timeout: 5s
       retries: 3
-      start_period: 40s
-    volumes:
-      - ./services/api-gateway/app:/app/app:ro
     networks:
       - costwatch-network
-    restart: unless-stopped
 
-  # Analytics Engine Service (Port 8003)
-  analytics-engine:
+  # Cost Service — AWS cost data and trends
+  cost-service:
     build:
-      context: ./services/analytics-engine
+      context: ./services/cost-service
       dockerfile: Dockerfile
-    container_name: costwatch-analytics-engine
-    environment:
-      - ENVIRONMENT=development
-      - DATABASE_URL=postgresql://costwatch_user:costwatch_password@postgres:5432/costwatch
-      - REDIS_URL=redis://redis:6379/3
-      - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=mock-access-key
-      - AWS_SECRET_ACCESS_KEY=mock-secret-key
-      - PORT=8003
-      - COST_ANALYZER_URL=http://cost-analyzer:8001
-      - RESOURCE_SCANNER_URL=http://resource-scanner:8000
+    container_name: costwatch-cost-service
     ports:
-      - "8003:8003"
+      - "8001:8001"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-costwatch}
+      - POSTGRES_USER=${POSTGRES_USER:-costwatch_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-costwatch_password}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
-      cost-analyzer:
-        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 15s
+      timeout: 5s
       retries: 3
-      start_period: 40s
-    volumes:
-      - ./services/analytics-engine/app:/app/app:ro
     networks:
       - costwatch-network
-    restart: unless-stopped
 
-  # Alert Manager Service (Port 8004)
-  alert-manager:
+  # Resource Scanner — AWS resource discovery
+  resource-scanner:
     build:
-      context: ./services/alert-manager
+      context: ./services/resource-scanner
       dockerfile: Dockerfile
-    container_name: costwatch-alert-manager
-    environment:
-      - ENVIRONMENT=development
-      - DATABASE_URL=postgresql://costwatch_user:costwatch_password@postgres:5432/costwatch
-      - REDIS_URL=redis://redis:6379/4
-      - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=mock-access-key
-      - AWS_SECRET_ACCESS_KEY=mock-secret-key
-      - PORT=8004
-      - COST_ANALYZER_URL=http://cost-analyzer:8001
-      - ANALYTICS_ENGINE_URL=http://analytics-engine:8003
-      - RESOURCE_SCANNER_URL=http://resource-scanner:8000
-      - AWS_ACCOUNT_ID=741448937760
+    container_name: costwatch-resource-scanner
     ports:
-      - "8004:8004"
+      - "8000:8000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-costwatch}
+      - POSTGRES_USER=${POSTGRES_USER:-costwatch_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-costwatch_password}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
-      cost-analyzer:
-        condition: service_healthy
-      analytics-engine:
-        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
       retries: 3
-      start_period: 40s
-    volumes:
-      - ./services/alert-manager/app:/app/app:ro
     networks:
       - costwatch-network
-    restart: unless-stopped
 
-  # Frontend Service (React)
+  # Frontend — minimal React dashboard
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: costwatch-frontend
-    environment:
-      - REACT_APP_API_URL=http://localhost:8002
-      - REACT_APP_ENV=development
     ports:
       - "3000:3000"
-    networks:
-      - costwatch-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Nginx Reverse Proxy
-  nginx:
-    image: nginx:alpine
-    container_name: costwatch-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
+    environment:
+      - REACT_APP_API_URL=http://localhost:8002
     depends_on:
       - api-gateway
-      - resource-scanner
-      - cost-analyzer
-      - analytics-engine
-      - alert-manager
-      - frontend
     networks:
       - costwatch-network
-    restart: unless-stopped
 
 volumes:
   postgres_data:
-    driver: local
-  redis_data:
-    driver: local
 
 networks:
   costwatch-network:
     driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.20.0.0/16

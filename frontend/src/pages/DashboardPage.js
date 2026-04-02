@@ -79,16 +79,11 @@ function DashboardPage() {
   const handleScanResources = async () => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch('http://localhost:8000/scan/all', {
-        method: 'POST',
+      const response = await fetch('http://localhost:8002/costs/resources', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          regions: ['us-west-2', 'us-east-1'],
-          include_costs: true,
-        }),
       });
 
       if (response.ok) {

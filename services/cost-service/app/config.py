@@ -1,17 +1,17 @@
 """
-Configuration management for Resource Scanner Service
+Configuration management for Cost Service
 """
 import os
 
 
 class Config:
-    APP_NAME = "CostWatch Resource Scanner"
+    APP_NAME = "CostWatch Cost Service"
     VERSION = "1.0.0"
     ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
     DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
     HOST = os.getenv("HOST", "0.0.0.0")
-    PORT = int(os.getenv("PORT", 8000))
+    PORT = int(os.getenv("PORT", 8001))
 
     # Database
     POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
@@ -24,9 +24,8 @@ class Config:
     AWS_REGION = os.getenv("AWS_DEFAULT_REGION", "us-west-2")
     AWS_ACCOUNT_ID = os.getenv("AWS_ACCOUNT_ID", "000000000000")
 
-    # Scan Settings
-    DEFAULT_SCAN_REGIONS = os.getenv("DEFAULT_SCAN_REGIONS", "us-west-2,us-east-1").split(",")
-    SCAN_TIMEOUT_SECONDS = int(os.getenv("SCAN_TIMEOUT_SECONDS", 300))
+    # Cost Analysis
+    DEFAULT_COST_PERIOD_DAYS = int(os.getenv("DEFAULT_COST_PERIOD_DAYS", 30))
 
     # Logging
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")

@@ -22,7 +22,7 @@ data:
         relabel_configs:
           - source_labels: [__meta_kubernetes_service_name]
             action: keep
-            regex: (api-gateway|cost-analyzer|resource-scanner|analytics-engine|alert-manager)-service
+            regex: (api-gateway|cost-service|resource-scanner)
           - source_labels: [__meta_kubernetes_endpoint_port_name]
             action: keep
             regex: metrics
