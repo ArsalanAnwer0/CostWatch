@@ -258,7 +258,56 @@ function ProviderBreakdownPanel({ providerBreakdown, totalSpend }) {
   );
 }
 
-function AlertsPanel({ alerts }) {
+function AlertDetailDrawer({ alert, onClose }) {
+  if (!alert) {
+    return null;
+  }
+
+  return (
+    <div className="alert-detail-drawer">
+      <div className="alert-detail-header">
+        <div>
+          <p className="panel-eyebrow">Alert Detail</p>
+          <h3>{alert.title}</h3>
+        </div>
+        <button type="button" className="service-detail-close" onClick={onClose} aria-label="Close alert detail">
+          CL
+        </button>
+      </div>
+
+      <div className="alert-detail-grid">
+        <div className="service-detail-card">
+          <span className="service-detail-label">Provider</span>
+          <strong>{PROVIDER_LABELS[alert.provider]}</strong>
+        </div>
+        <div className="service-detail-card">
+          <span className="service-detail-label">Impact</span>
+          <strong>{alert.impact}</strong>
+        </div>
+        <div className="service-detail-card">
+          <span className="service-detail-label">Owner</span>
+          <strong>{alert.owner}</strong>
+        </div>
+        <div className="service-detail-card">
+          <span className="service-detail-label">Confidence</span>
+          <strong>{alert.confidence}</strong>
+        </div>
+      </div>
+
+      <div className="service-detail-block">
+        <span className="service-detail-label">Alert summary</span>
+        <p>{alert.message}</p>
+      </div>
+
+      <div className="service-detail-block">
+        <span className="service-detail-label">Recommended next step</span>
+        <p>{alert.nextStep}</p>
+      </div>
+    </div>
+  );
+}
+
+function AlertsPanel({ alerts, selectedAlert, onSelectAlert, onCloseAlert }) {
   return (
     <article className="dashboard-panel" id="alerts">
       <div className="panel-header">
@@ -279,7 +328,7 @@ function AlertsPanel({ alerts }) {
               </div>
               <h4>{alert.title}</h4>
               <p>{alert.message}</p>
-              <button type="button" className="panel-inline-action">
+              <button type="button" className="panel-inline-action" onClick={() => onSelectAlert(alert)}>
                 {alert.action}
               </button>
             </div>
@@ -291,6 +340,8 @@ function AlertsPanel({ alerts }) {
           </div>
         )}
       </div>
+
+      <AlertDetailDrawer alert={selectedAlert} onClose={onCloseAlert} />
     </article>
   );
 }
@@ -565,6 +616,7 @@ function DashboardContent({
   filteredBudgets,
   filteredProviderBreakdown,
   filteredRegions,
+  selectedAlert,
   selectedService,
   normalizedQuery,
   totalSpend,
@@ -572,6 +624,8 @@ function DashboardContent({
   onProviderChange,
   onAlertSeverityChange,
   onResetFilters,
+  onSelectAlert,
+  onCloseAlert,
   onSelectService,
   onCloseService,
   onQuickAction,
@@ -596,7 +650,12 @@ function DashboardContent({
           activeProviderKeys={activeProviderKeys}
         />
         <ProviderBreakdownPanel providerBreakdown={filteredProviderBreakdown} totalSpend={totalSpend} />
-        <AlertsPanel alerts={filteredAlerts} />
+        <AlertsPanel
+          alerts={filteredAlerts}
+          selectedAlert={selectedAlert}
+          onSelectAlert={onSelectAlert}
+          onCloseAlert={onCloseAlert}
+        />
         <ServicesPanel
           services={filteredServices}
           normalizedQuery={normalizedQuery}

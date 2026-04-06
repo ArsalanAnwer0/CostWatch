@@ -74,6 +74,7 @@ function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [dashboardSnapshot, setDashboardSnapshot] = useState({});
   const [user, setUser] = useState(null);
+  const [selectedAlert, setSelectedAlert] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [toast, setToast] = useState(null);
   const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -283,6 +284,7 @@ function DashboardPage() {
     setSelectedAlertSeverity('all');
     setSearchQuery('');
     setSelectedRange('6m');
+    setSelectedAlert(null);
     setSelectedService(null);
     setToast({
       type: 'info',
@@ -347,6 +349,7 @@ function DashboardPage() {
           filteredBudgets={filteredBudgets}
           filteredProviderBreakdown={filteredProviderBreakdown}
           filteredRegions={filteredRegions}
+          selectedAlert={selectedAlert}
           selectedService={selectedService}
           normalizedQuery={normalizedQuery}
           totalSpend={totalSpend}
@@ -354,6 +357,8 @@ function DashboardPage() {
           onProviderChange={setSelectedProvider}
           onAlertSeverityChange={setSelectedAlertSeverity}
           onResetFilters={handleResetFilters}
+          onSelectAlert={setSelectedAlert}
+          onCloseAlert={() => setSelectedAlert(null)}
           onSelectService={setSelectedService}
           onCloseService={() => setSelectedService(null)}
           onQuickAction={handleQuickAction}

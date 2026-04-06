@@ -235,6 +235,11 @@ const ALERT_TEMPLATES = [
     message: 'A production autoscaling group is expanding earlier than expected in us-east-1.',
     action: 'Review scaling policy',
     time: '2 minutes ago',
+    provider: 'aws',
+    owner: 'Platform runtime',
+    impact: '$9.4K projected overrun',
+    confidence: 'High confidence',
+    nextStep: 'Compare autoscaling triggers against the last healthy traffic window and lower the overnight floor.',
   },
   {
     severity: 'high',
@@ -242,6 +247,11 @@ const ALERT_TEMPLATES = [
     message: 'Elastic pool usage has risen steadily for the last three billing windows.',
     action: 'Inspect workload split',
     time: '19 minutes ago',
+    provider: 'azure',
+    owner: 'Data platform',
+    impact: '$6.1K monthly risk',
+    confidence: 'Medium-high confidence',
+    nextStep: 'Move bursty tenants into serverless tiers and review reserved capacity coverage before the next cycle.',
   },
   {
     severity: 'medium',
@@ -249,6 +259,11 @@ const ALERT_TEMPLATES = [
     message: 'Object storage retention is trending 11% above plan after the latest ingestion burst.',
     action: 'Apply lifecycle policy',
     time: '51 minutes ago',
+    provider: 'gcp',
+    owner: 'Media delivery',
+    impact: '$2.2K monthly drift',
+    confidence: 'Medium confidence',
+    nextStep: 'Tighten archive rules for cold objects and reduce duplicate regional retention copies.',
   },
   {
     severity: 'low',
@@ -256,6 +271,11 @@ const ALERT_TEMPLATES = [
     message: 'Steady EC2 workloads are eligible for better committed spend pricing.',
     action: 'Open savings playbook',
     time: '2 hours ago',
+    provider: 'aws',
+    owner: 'Core application',
+    impact: '$1.8K potential savings',
+    confidence: 'High confidence',
+    nextStep: 'Review steady-state EC2 workloads and map them against one-year savings plan options.',
   },
 ];
 
