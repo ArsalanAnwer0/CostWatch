@@ -1,7 +1,13 @@
 import React from 'react';
 import { formatCurrency } from '../../utils';
 
-function DashboardSidebar({ navigationSections, dashboardMeta, providerStatuses }) {
+function DashboardSidebar({
+  navigationSections,
+  dashboardMeta,
+  providerStatuses,
+  activeSectionId,
+  onNavigate,
+}) {
   return (
     <aside className="dashboard-sidebar">
       <div className="sidebar-brand">
@@ -27,8 +33,9 @@ function DashboardSidebar({ navigationSections, dashboardMeta, providerStatuses 
             {section.items.map((item) => (
               <button
                 type="button"
-                className={`sidebar-nav-item ${item.active ? 'active' : ''}`}
+                className={`sidebar-nav-item ${activeSectionId === item.id || (!activeSectionId && item.active) ? 'active' : ''}`}
                 key={item.id}
+                onClick={() => onNavigate(item.id)}
               >
                 <span className="sidebar-nav-icon">{item.shortLabel}</span>
                 <span>{item.label}</span>

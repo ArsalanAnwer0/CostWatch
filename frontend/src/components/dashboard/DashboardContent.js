@@ -39,7 +39,7 @@ function MetricCard({ metric }) {
 
 function DashboardHero({ onQuickAction }) {
   return (
-    <section className="dashboard-hero">
+    <section className="dashboard-hero" id="overview">
       <div className="dashboard-hero-copy">
         <div className="dashboard-hero-chip">
           <span className="status-dot"></span>
@@ -76,7 +76,7 @@ function DashboardMetrics({ metrics }) {
 
 function SpendingTrendsPanel({ spendingTrend, providerBreakdown, totalSpend }) {
   return (
-    <article className="dashboard-panel panel-span-2">
+    <article className="dashboard-panel panel-span-2" id="spend">
       <div className="panel-header">
         <div>
           <p className="panel-eyebrow">Spending Trends</p>
@@ -191,7 +191,7 @@ function ProviderBreakdownPanel({ providerBreakdown, totalSpend }) {
 
 function AlertsPanel({ alerts }) {
   return (
-    <article className="dashboard-panel">
+    <article className="dashboard-panel" id="alerts">
       <div className="panel-header">
         <div>
           <p className="panel-eyebrow">Alerts Panel</p>
@@ -201,19 +201,26 @@ function AlertsPanel({ alerts }) {
       </div>
 
       <div className="alerts-list">
-        {alerts.map((alert) => (
-          <div className={`alert-card alert-card-${alert.severity}`} key={alert.title}>
-            <div className="alert-card-topline">
-              <span className={`severity-pill severity-pill-${alert.severity}`}>{alert.severity}</span>
-              <span className="alert-time">{alert.time}</span>
+        {alerts.length > 0 ? (
+          alerts.map((alert) => (
+            <div className={`alert-card alert-card-${alert.severity}`} key={alert.title}>
+              <div className="alert-card-topline">
+                <span className={`severity-pill severity-pill-${alert.severity}`}>{alert.severity}</span>
+                <span className="alert-time">{alert.time}</span>
+              </div>
+              <h4>{alert.title}</h4>
+              <p>{alert.message}</p>
+              <button type="button" className="panel-inline-action">
+                {alert.action}
+              </button>
             </div>
-            <h4>{alert.title}</h4>
-            <p>{alert.message}</p>
-            <button type="button" className="panel-inline-action">
-              {alert.action}
-            </button>
+          ))
+        ) : (
+          <div className="panel-empty-state">
+            <strong>No alerts match this search</strong>
+            <p>Try a broader query to surface anomaly and recommendation results.</p>
           </div>
-        ))}
+        )}
       </div>
     </article>
   );
@@ -221,7 +228,7 @@ function AlertsPanel({ alerts }) {
 
 function ServicesPanel({ services, normalizedQuery }) {
   return (
-    <article className="dashboard-panel panel-span-2">
+    <article className="dashboard-panel panel-span-2" id="services">
       <div className="panel-header">
         <div>
           <p className="panel-eyebrow">Services Table</p>
@@ -232,62 +239,69 @@ function ServicesPanel({ services, normalizedQuery }) {
         </span>
       </div>
 
-      <div className="services-table-wrapper">
-        <table className="services-table">
-          <thead>
-            <tr>
-              <th>Service</th>
-              <th>Provider</th>
-              <th>Region</th>
-              <th>Status</th>
-              <th>Trend</th>
-              <th>Monthly cost</th>
-              <th>Recommendation</th>
-            </tr>
-          </thead>
-          <tbody>
-            {services.map((service) => {
-              const provider = PROVIDER_CONFIG.find((entry) => entry.key === service.provider);
+      {services.length > 0 ? (
+        <div className="services-table-wrapper">
+          <table className="services-table">
+            <thead>
+              <tr>
+                <th>Service</th>
+                <th>Provider</th>
+                <th>Region</th>
+                <th>Status</th>
+                <th>Trend</th>
+                <th>Monthly cost</th>
+                <th>Recommendation</th>
+              </tr>
+            </thead>
+            <tbody>
+              {services.map((service) => {
+                const provider = PROVIDER_CONFIG.find((entry) => entry.key === service.provider);
 
-              return (
-                <tr key={`${service.provider}-${service.service}`}>
-                  <td>
-                    <div className="service-name-cell">
-                      <strong>{service.service}</strong>
-                      <span>{service.weight * 100}% of mapped spend</span>
-                    </div>
-                  </td>
-                  <td>
-                    <span
-                      className="provider-chip"
-                      style={{
-                        color: provider?.accent,
-                        background: provider?.accentSoft,
-                      }}
-                    >
-                      {PROVIDER_LABELS[service.provider]}
-                    </span>
-                  </td>
-                  <td>{service.region}</td>
-                  <td>
-                    <span className={`status-pill status-pill-${service.status.toLowerCase().replace(/\s+/g, '-')}`}>
-                      {service.status}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`trend-pill trend-pill-${service.trend}`}>
-                      {service.change > 0 ? '+' : ''}
-                      {service.change.toFixed(1)}%
-                    </span>
-                  </td>
-                  <td>{formatCurrency(service.monthlyCost)}</td>
-                  <td>{service.recommendation}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                return (
+                  <tr key={`${service.provider}-${service.service}`}>
+                    <td>
+                      <div className="service-name-cell">
+                        <strong>{service.service}</strong>
+                        <span>{service.weight * 100}% of mapped spend</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span
+                        className="provider-chip"
+                        style={{
+                          color: provider?.accent,
+                          background: provider?.accentSoft,
+                        }}
+                      >
+                        {PROVIDER_LABELS[service.provider]}
+                      </span>
+                    </td>
+                    <td>{service.region}</td>
+                    <td>
+                      <span className={`status-pill status-pill-${service.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                        {service.status}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`trend-pill trend-pill-${service.trend}`}>
+                        {service.change > 0 ? '+' : ''}
+                        {service.change.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td>{formatCurrency(service.monthlyCost)}</td>
+                    <td>{service.recommendation}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="panel-empty-state">
+          <strong>No services match this search</strong>
+          <p>Try a provider name, region, or recommendation keyword to widen the result set.</p>
+        </div>
+      )}
     </article>
   );
 }
@@ -295,7 +309,7 @@ function ServicesPanel({ services, normalizedQuery }) {
 function DashboardStack({ budgets, quickActions, onQuickAction }) {
   return (
     <div className="dashboard-stack">
-      <article className="dashboard-panel">
+      <article className="dashboard-panel" id="budgets">
         <div className="panel-header">
           <div>
             <p className="panel-eyebrow">Budget Tracker</p>
@@ -331,7 +345,7 @@ function DashboardStack({ budgets, quickActions, onQuickAction }) {
         </div>
       </article>
 
-      <article className="dashboard-panel">
+      <article className="dashboard-panel" id="workflows">
         <div className="panel-header">
           <div>
             <p className="panel-eyebrow">Quick Actions</p>
@@ -360,7 +374,7 @@ function DashboardStack({ budgets, quickActions, onQuickAction }) {
 
 function RegionsPanel({ regions }) {
   return (
-    <article className="dashboard-panel panel-span-2">
+    <article className="dashboard-panel panel-span-2" id="regions">
       <div className="panel-header">
         <div>
           <p className="panel-eyebrow">Cost by Region</p>

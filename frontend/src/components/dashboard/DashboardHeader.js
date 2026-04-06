@@ -11,6 +11,7 @@ function DashboardHeader({
   onSearchChange,
   onRangeChange,
   onRefresh,
+  onOpenAlerts,
   onLogout,
 }) {
   return (
@@ -55,7 +56,12 @@ function DashboardHeader({
           {refreshing ? '...' : 'RF'}
         </button>
 
-        <button type="button" className="dashboard-icon-button dashboard-icon-button-notification" aria-label="Notifications">
+        <button
+          type="button"
+          className="dashboard-icon-button dashboard-icon-button-notification"
+          aria-label="Notifications"
+          onClick={onOpenAlerts}
+        >
           NT
           <span className="notification-count">{unreadAlerts}</span>
         </button>

@@ -773,6 +773,25 @@
   color: var(--text-primary);
 }
 
+.panel-empty-state {
+  padding: 24px;
+  border-radius: 20px;
+  background: rgba(8, 16, 30, 0.82);
+  border: 1px dashed rgba(148, 163, 184, 0.18);
+}
+
+.panel-empty-state strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.panel-empty-state p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
 .services-table-wrapper {
   overflow: auto;
 }

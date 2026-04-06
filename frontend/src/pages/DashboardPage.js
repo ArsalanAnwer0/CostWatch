@@ -44,6 +44,7 @@ function DashboardPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeSectionId, setActiveSectionId] = useState('overview');
   const [selectedRange, setSelectedRange] = useState('6m');
   const [searchQuery, setSearchQuery] = useState('');
   const [dashboardSnapshot, setDashboardSnapshot] = useState({});
@@ -125,6 +126,32 @@ function DashboardPage() {
     navigate('/');
   };
 
+  const scrollToSection = (sectionId) => {
+    const scrollTargets = {
+      overview: 'overview',
+      spend: 'spend',
+      alerts: 'alerts',
+      budgets: 'budgets',
+      services: 'services',
+      regions: 'regions',
+      reports: 'overview',
+      workflows: 'workflows',
+      settings: 'overview',
+    };
+
+    const targetId = scrollTargets[sectionId];
+    const target = targetId ? document.getElementById(targetId) : null;
+
+    setActiveSectionId(sectionId);
+
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return true;
+    }
+
+    return false;
+  };
+
   const handleQuickAction = async (actionId) => {
     if (actionId === 'export-data') {
       const rows = [
@@ -184,6 +211,19 @@ function DashboardPage() {
     });
   };
 
+  const handleSidebarNavigate = (sectionId) => {
+    const didScroll = scrollToSection(sectionId);
+
+    if (didScroll) {
+      return;
+    }
+
+    setToast({
+      type: 'info',
+      message: `The ${sectionId} workspace is the next product surface to wire in.`,
+    });
+  };
+
   if (loading) {
     return <LoadingSpinner fullPage size="large" text="Assembling your command center..." />;
   }
@@ -194,6 +234,8 @@ function DashboardPage() {
         navigationSections={DASHBOARD_NAV_SECTIONS}
         dashboardMeta={dashboardData.meta}
         providerStatuses={dashboardData.providerStatuses}
+        activeSectionId={activeSectionId}
+        onNavigate={handleSidebarNavigate}
       />
 
       <main className="dashboard-main">
@@ -207,6 +249,7 @@ function DashboardPage() {
           onSearchChange={setSearchQuery}
           onRangeChange={setSelectedRange}
           onRefresh={() => refreshDashboard({ showToast: true })}
+          onOpenAlerts={() => handleSidebarNavigate('alerts')}
           onLogout={handleLogout}
         />
 
