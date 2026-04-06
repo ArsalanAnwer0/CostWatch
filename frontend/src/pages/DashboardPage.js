@@ -5,6 +5,7 @@ import DashboardContent from '../components/dashboard/DashboardContent';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
 import { PROVIDER_LABELS } from '../components/dashboard/dashboardUtils';
+import { useLocalStorage } from '../hooks';
 import { STORAGE_KEYS } from '../constants';
 import {
   buildDashboardModel,
@@ -40,12 +41,35 @@ async function loadDashboardSnapshot() {
   };
 }
 
+const ALERT_SEVERITY_RANK = {
+  low: 0,
+  medium: 1,
+  high: 2,
+  critical: 3,
+};
+
+function aggregateRegionCosts(services) {
+  const totals = services.reduce((accumulator, service) => {
+    accumulator[service.region] = (accumulator[service.region] || 0) + service.monthlyCost;
+    return accumulator;
+  }, {});
+
+  return Object.entries(totals)
+    .map(([region, cost]) => ({
+      region,
+      cost: Math.round(cost * 100) / 100,
+    }))
+    .sort((left, right) => right.cost - left.cost);
+}
+
 function DashboardPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState('overview');
-  const [selectedRange, setSelectedRange] = useState('6m');
+  const [selectedRange, setSelectedRange] = useLocalStorage(STORAGE_KEYS.DASHBOARD_RANGE, '6m');
+  const [selectedProvider, setSelectedProvider] = useLocalStorage(STORAGE_KEYS.DASHBOARD_PROVIDER, 'all');
+  const [selectedAlertSeverity, setSelectedAlertSeverity] = useLocalStorage(STORAGE_KEYS.DASHBOARD_ALERT_SEVERITY, 'all');
   const [searchQuery, setSearchQuery] = useState('');
   const [dashboardSnapshot, setDashboardSnapshot] = useState({});
   const [user, setUser] = useState(null);
@@ -57,9 +81,21 @@ function DashboardPage() {
     range: selectedRange,
   });
 
-  const totalSpend = dashboardData.providerBreakdown.reduce((sum, provider) => sum + provider.value, 0);
+  const activeProviderKeys = selectedProvider === 'all'
+    ? dashboardData.providerBreakdown.map((provider) => provider.key)
+    : [selectedProvider];
+  const filteredProviderBreakdown = dashboardData.providerBreakdown.filter((provider) =>
+    selectedProvider === 'all' ? true : provider.key === selectedProvider
+  );
+  const filteredBudgets = dashboardData.budgets.filter((budget) =>
+    selectedProvider === 'all' ? true : budget.key === selectedProvider
+  );
+  const totalSpend = filteredProviderBreakdown.reduce((sum, provider) => sum + provider.value, 0);
   const normalizedQuery = deferredSearchQuery.trim().toLowerCase();
-  const filteredServices = dashboardData.services.filter((service) => {
+  const providerFilteredServices = dashboardData.services.filter((service) =>
+    selectedProvider === 'all' ? true : service.provider === selectedProvider
+  );
+  const filteredServices = providerFilteredServices.filter((service) => {
     if (!normalizedQuery) {
       return true;
     }
@@ -73,6 +109,18 @@ function DashboardPage() {
     ].some((value) => value.toLowerCase().includes(normalizedQuery));
   });
   const filteredAlerts = dashboardData.alerts.filter((alert) => {
+    const providerMatches = selectedProvider === 'all'
+      ? true
+      : [alert.title, alert.message, alert.action]
+        .some((value) => value.toLowerCase().includes(PROVIDER_LABELS[selectedProvider].toLowerCase()));
+    const severityMatches = selectedAlertSeverity === 'all'
+      ? true
+      : ALERT_SEVERITY_RANK[alert.severity] >= ALERT_SEVERITY_RANK[selectedAlertSeverity];
+
+    if (!providerMatches || !severityMatches) {
+      return false;
+    }
+
     if (!normalizedQuery) {
       return true;
     }
@@ -81,6 +129,9 @@ function DashboardPage() {
       value.toLowerCase().includes(normalizedQuery)
     );
   });
+  const filteredRegions = selectedProvider === 'all'
+    ? dashboardData.regions
+    : aggregateRegionCosts(providerFilteredServices);
 
   const refreshDashboard = async ({ showToast = false } = {}) => {
     setRefreshing(true);
@@ -224,6 +275,17 @@ function DashboardPage() {
     });
   };
 
+  const handleResetFilters = () => {
+    setSelectedProvider('all');
+    setSelectedAlertSeverity('all');
+    setSearchQuery('');
+    setSelectedRange('6m');
+    setToast({
+      type: 'info',
+      message: 'Dashboard filters reset to the default operating view.',
+    });
+  };
+
   if (loading) {
     return <LoadingSpinner fullPage size="large" text="Assembling your command center..." />;
   }
@@ -255,10 +317,19 @@ function DashboardPage() {
 
         <DashboardContent
           dashboardData={dashboardData}
+          selectedProvider={selectedProvider}
+          selectedAlertSeverity={selectedAlertSeverity}
           filteredServices={filteredServices}
           filteredAlerts={filteredAlerts}
+          filteredBudgets={filteredBudgets}
+          filteredProviderBreakdown={filteredProviderBreakdown}
+          filteredRegions={filteredRegions}
           normalizedQuery={normalizedQuery}
           totalSpend={totalSpend}
+          activeProviderKeys={activeProviderKeys}
+          onProviderChange={setSelectedProvider}
+          onAlertSeverityChange={setSelectedAlertSeverity}
+          onResetFilters={handleResetFilters}
           onQuickAction={handleQuickAction}
         />
       </main>

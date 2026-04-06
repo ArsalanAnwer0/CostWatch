@@ -104,6 +104,9 @@ export const STORAGE_KEYS = {
   PREFERENCES: 'preferences',
   SELECTED_REGION: 'selectedRegion',
   THEME: 'theme',
+  DASHBOARD_RANGE: 'dashboardRange',
+  DASHBOARD_PROVIDER: 'dashboardProvider',
+  DASHBOARD_ALERT_SEVERITY: 'dashboardAlertSeverity',
 };
 
 // Date Formats

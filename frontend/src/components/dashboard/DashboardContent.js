@@ -18,6 +18,14 @@ import { formatCompactNumber, formatCurrency } from '../../utils';
 import { DonutTooltip, RegionTooltip, SpendTooltip } from './DashboardTooltips';
 import { PROVIDER_LABELS } from './dashboardUtils';
 
+const ALERT_SEVERITY_OPTIONS = [
+  { value: 'all', label: 'All severities' },
+  { value: 'critical', label: 'Critical only' },
+  { value: 'high', label: 'High and above' },
+  { value: 'medium', label: 'Medium and above' },
+  { value: 'low', label: 'Low and above' },
+];
+
 function MetricCard({ metric }) {
   const value = metric.formattedValue || formatCurrency(metric.value);
   const trendLabel = metric.trend === 'positive' ? 'Improvement' : metric.trend === 'warning' ? 'Watchlist' : 'Change';
@@ -74,7 +82,60 @@ function DashboardMetrics({ metrics }) {
   );
 }
 
-function SpendingTrendsPanel({ spendingTrend, providerBreakdown, totalSpend }) {
+function DashboardFilters({
+  selectedProvider,
+  selectedAlertSeverity,
+  onProviderChange,
+  onAlertSeverityChange,
+  onReset,
+}) {
+  return (
+    <section className="dashboard-filters">
+      <div className="dashboard-filter-group">
+        <span className="dashboard-filter-label">Provider focus</span>
+        <div className="dashboard-filter-chips">
+          <button
+            type="button"
+            className={`dashboard-filter-chip ${selectedProvider === 'all' ? 'active' : ''}`}
+            onClick={() => onProviderChange('all')}
+          >
+            All providers
+          </button>
+          {PROVIDER_CONFIG.map((provider) => (
+            <button
+              type="button"
+              key={provider.key}
+              className={`dashboard-filter-chip ${selectedProvider === provider.key ? 'active' : ''}`}
+              onClick={() => onProviderChange(provider.key)}
+            >
+              {provider.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="dashboard-filter-group dashboard-filter-group-inline">
+        <span className="dashboard-filter-label">Alert threshold</span>
+        <select
+          className="dashboard-filter-select"
+          value={selectedAlertSeverity}
+          onChange={(event) => onAlertSeverityChange(event.target.value)}
+        >
+          {ALERT_SEVERITY_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <button type="button" className="dashboard-filter-reset" onClick={onReset}>
+          Reset filters
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function SpendingTrendsPanel({ spendingTrend, providerBreakdown, totalSpend, activeProviderKeys }) {
   return (
     <article className="dashboard-panel panel-span-2" id="spend">
       <div className="panel-header">
@@ -114,9 +175,17 @@ function SpendingTrendsPanel({ spendingTrend, providerBreakdown, totalSpend }) {
               tickFormatter={(value) => `$${formatCompactNumber(value)}`}
             />
             <Tooltip content={<SpendTooltip />} />
-            <Area type="monotone" dataKey="aws" stackId="1" stroke="#f59e0b" fill="url(#awsGradient)" strokeWidth={2} />
-            <Area type="monotone" dataKey="azure" stackId="1" stroke="#38bdf8" fill="url(#azureGradient)" strokeWidth={2} />
-            <Area type="monotone" dataKey="gcp" stackId="1" stroke="#22c55e" fill="url(#gcpGradient)" strokeWidth={2} />
+            {activeProviderKeys.map((providerKey) => (
+              <Area
+                key={providerKey}
+                type="monotone"
+                dataKey={providerKey}
+                stackId="1"
+                stroke={providerKey === 'aws' ? '#f59e0b' : providerKey === 'azure' ? '#38bdf8' : '#22c55e'}
+                fill={`url(#${providerKey}Gradient)`}
+                strokeWidth={2}
+              />
+            ))}
           </AreaChart>
         </ResponsiveContainer>
       </div>
@@ -420,32 +489,49 @@ function RegionsPanel({ regions }) {
 
 function DashboardContent({
   dashboardData,
+  selectedProvider,
+  selectedAlertSeverity,
   filteredServices,
   filteredAlerts,
+  filteredBudgets,
+  filteredProviderBreakdown,
+  filteredRegions,
   normalizedQuery,
   totalSpend,
+  activeProviderKeys,
+  onProviderChange,
+  onAlertSeverityChange,
+  onResetFilters,
   onQuickAction,
 }) {
   return (
     <>
       <DashboardHero onQuickAction={onQuickAction} />
+      <DashboardFilters
+        selectedProvider={selectedProvider}
+        selectedAlertSeverity={selectedAlertSeverity}
+        onProviderChange={onProviderChange}
+        onAlertSeverityChange={onAlertSeverityChange}
+        onReset={onResetFilters}
+      />
       <DashboardMetrics metrics={dashboardData.metrics} />
 
       <section className="dashboard-grid">
         <SpendingTrendsPanel
           spendingTrend={dashboardData.spendingTrend}
-          providerBreakdown={dashboardData.providerBreakdown}
+          providerBreakdown={filteredProviderBreakdown}
           totalSpend={totalSpend}
+          activeProviderKeys={activeProviderKeys}
         />
-        <ProviderBreakdownPanel providerBreakdown={dashboardData.providerBreakdown} totalSpend={totalSpend} />
+        <ProviderBreakdownPanel providerBreakdown={filteredProviderBreakdown} totalSpend={totalSpend} />
         <AlertsPanel alerts={filteredAlerts} />
         <ServicesPanel services={filteredServices} normalizedQuery={normalizedQuery} />
         <DashboardStack
-          budgets={dashboardData.budgets}
+          budgets={filteredBudgets}
           quickActions={dashboardData.quickActions}
           onQuickAction={onQuickAction}
         />
-        <RegionsPanel regions={dashboardData.regions} />
+        <RegionsPanel regions={filteredRegions} />
       </section>
     </>
   );
