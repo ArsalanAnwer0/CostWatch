@@ -2,272 +2,320 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 
+const stats = [
+  { value: '35%', label: 'Average cost reduction' },
+  { value: '$2.4M', label: 'Customer savings unlocked' },
+  { value: '500+', label: 'Teams monitoring spend daily' },
+  { value: '24/7', label: 'Automated anomaly coverage' },
+];
+
+const features = [
+  {
+    label: 'MC',
+    title: 'Multi-cloud command center',
+    description: 'Monitor AWS, Azure, and GCP from one polished control surface built for finance and engineering leaders.',
+  },
+  {
+    label: 'AI',
+    title: 'AI-powered optimization',
+    description: 'Turn noisy cost telemetry into ranked actions with projected savings, confidence signals, and execution paths.',
+  },
+  {
+    label: 'AL',
+    title: 'Anomaly detection',
+    description: 'Catch spend spikes early with context-rich alerts that explain why the change happened and what to do next.',
+  },
+  {
+    label: 'FC',
+    title: 'Forecasting and planning',
+    description: 'See where month-end run rate is headed and plan budgets using live provider trends and workload signals.',
+  },
+  {
+    label: 'RG',
+    title: 'Service and region intelligence',
+    description: 'Pinpoint expensive workloads across regions, environments, and platforms without digging through multiple consoles.',
+  },
+  {
+    label: 'RP',
+    title: 'Executive-ready reporting',
+    description: 'Generate clean summaries for leadership, finance, and platform teams without hand-building spreadsheets.',
+  },
+];
+
+const steps = [
+  {
+    number: '01',
+    title: 'Connect cloud accounts',
+    description: 'Securely attach read-only cloud access and sync spending, budgets, and workload metadata.',
+  },
+  {
+    number: '02',
+    title: 'Map spend drivers',
+    description: 'CostWatch groups spend by provider, service, and region so the expensive patterns stand out instantly.',
+  },
+  {
+    number: '03',
+    title: 'Prioritize actions',
+    description: 'AI recommendations rank the fastest wins, from rightsizing fleets to tightening lifecycle policies.',
+  },
+  {
+    number: '04',
+    title: 'Measure savings',
+    description: 'Track realized impact over time and keep leadership aligned on efficiency progress.',
+  },
+];
+
+const pricingPlans = [
+  {
+    name: 'Starter',
+    price: '49',
+    description: 'For lean teams beginning to formalize cloud cost visibility.',
+    features: ['Up to $10K cloud spend', '5 cloud accounts', 'Core alerts and dashboards', '7-day history'],
+    cta: 'Start free trial',
+    featured: false,
+  },
+  {
+    name: 'Professional',
+    price: '199',
+    description: 'For scaling product teams that need actionable optimization workflows.',
+    features: ['Up to $50K cloud spend', '20 cloud accounts', 'Forecasting and budget controls', '90-day history', 'Slack and email alerts'],
+    cta: 'Start free trial',
+    featured: true,
+  },
+  {
+    name: 'Enterprise',
+    price: '499',
+    description: 'For multi-team organizations with advanced reporting and governance needs.',
+    features: ['Unlimited cloud spend', 'Unlimited accounts', 'Custom dashboards', 'Dedicated support', '1-year history'],
+    cta: 'Contact sales',
+    featured: false,
+  },
+];
+
 function LandingPage() {
   const navigate = useNavigate();
 
   return (
     <div className="landing-page">
-      {/* Hero Section */}
       <header className="hero">
         <nav className="navbar">
           <div className="logo">
-            <h1>CostWatch</h1>
+            <div className="logo-mark">CW</div>
+            <div>
+              <h1>CostWatch</h1>
+              <p>AI cost intelligence</p>
+            </div>
           </div>
+
           <div className="nav-links">
             <a href="#features">Features</a>
-            <a href="#how-it-works">How It Works</a>
+            <a href="#how-it-works">How it works</a>
             <a href="#pricing">Pricing</a>
-            <button className="btn-secondary" onClick={() => navigate('/login')}>
+            <button type="button" className="landing-btn-secondary" onClick={() => navigate('/login')}>
               Login
             </button>
-            <button className="btn-primary" onClick={() => navigate('/register')}>
-              Get Started
+            <button type="button" className="landing-btn-primary" onClick={() => navigate('/register')}>
+              Get started
             </button>
           </div>
         </nav>
 
-        <div className="hero-content">
-          <h1 className="hero-title">
-            Reduce Your AWS Costs by 35%
-          </h1>
-          <p className="hero-subtitle">
-            Smart cloud cost optimization platform that helps companies eliminate waste
-            through intelligent monitoring and automated recommendations
-          </p>
-          <div className="hero-cta">
-            <button className="btn-primary-large" onClick={() => navigate('/register')}>
-              Start Free Trial
-            </button>
-            <button className="btn-secondary-large" onClick={() => navigate('/login')}>
-              View Demo
-            </button>
+        <div className="hero-layout">
+          <div className="hero-content">
+            <div className="hero-kicker">Built for modern platform, finance, and AI teams</div>
+            <h2 className="hero-title">Turn multi-cloud cost chaos into a high-signal operating system.</h2>
+            <p className="hero-subtitle">
+              CostWatch helps ambitious companies see live spend across AWS, Azure, and GCP, understand what is changing,
+              and act on the highest-confidence savings opportunities fast.
+            </p>
+
+            <div className="hero-provider-row">
+              <span className="provider-pill provider-pill-aws">AWS</span>
+              <span className="provider-pill provider-pill-azure">Azure</span>
+              <span className="provider-pill provider-pill-gcp">GCP</span>
+            </div>
+
+            <div className="hero-cta">
+              <button type="button" className="landing-btn-primary-large" onClick={() => navigate('/register')}>
+                Start free trial
+              </button>
+              <button type="button" className="landing-btn-secondary-large" onClick={() => navigate('/login')}>
+                View live dashboard
+              </button>
+            </div>
+
+            <p className="hero-note">No credit card required. 14-day trial. Executive-ready reporting from day one.</p>
           </div>
-          <p className="hero-note">No credit card required • 14-day free trial</p>
+
+          <div className="hero-visual">
+            <div className="hero-panel hero-panel-main">
+              <div className="hero-panel-topline">
+                <span>Live spend pulse</span>
+                <strong>Healthy</strong>
+              </div>
+
+              <div className="hero-panel-metric">
+                <div>
+                  <small>Total tracked spend</small>
+                  <h3>$184.3K</h3>
+                </div>
+                <div className="hero-metric-badge">-12.4%</div>
+              </div>
+
+              <div className="hero-provider-metrics">
+                <div>
+                  <span>AWS</span>
+                  <strong>$88.5K</strong>
+                </div>
+                <div>
+                  <span>Azure</span>
+                  <strong>$62.1K</strong>
+                </div>
+                <div>
+                  <span>GCP</span>
+                  <strong>$33.7K</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="hero-panel-grid">
+              <div className="hero-panel">
+                <span>Projected savings</span>
+                <strong>$28.4K</strong>
+                <small>this billing cycle</small>
+              </div>
+              <div className="hero-panel">
+                <span>Top recommendation</span>
+                <strong>Rightsize AKS + EKS</strong>
+                <small>high confidence</small>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Stats Section */}
       <section className="stats">
         <div className="stats-container">
-          <div className="stat-item">
-            <h3>35%</h3>
-            <p>Average Cost Reduction</p>
-          </div>
-          <div className="stat-item">
-            <h3>$2.4M</h3>
-            <p>Saved for Customers</p>
-          </div>
-          <div className="stat-item">
-            <h3>500+</h3>
-            <p>Companies Trust Us</p>
-          </div>
-          <div className="stat-item">
-            <h3>24/7</h3>
-            <p>Cost Monitoring</p>
-          </div>
+          {stats.map((stat) => (
+            <div className="stat-item" key={stat.label}>
+              <h3>{stat.value}</h3>
+              <p>{stat.label}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Features Section */}
       <section id="features" className="features">
-        <h2 className="section-title">Powerful Features to Optimize Your Cloud Spending</h2>
+        <div className="section-heading">
+          <p className="section-kicker">Product Surface</p>
+          <h2 className="section-title">One front end for cost visibility, optimization, and operator confidence.</h2>
+        </div>
+
         <div className="features-grid">
-          <div className="feature-card">
-            <div className="feature-icon">📊</div>
-            <h3>Real-Time Cost Monitoring</h3>
-            <p>
-              Track AWS spending across all services in real-time with detailed breakdowns
-              by service, region, and department
-            </p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">💡</div>
-            <h3>Smart Recommendations</h3>
-            <p>
-              AI-powered optimization recommendations for right-sizing instances,
-              removing idle resources, and choosing better pricing models
-            </p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">🔔</div>
-            <h3>Intelligent Alerts</h3>
-            <p>
-              Get notified instantly about cost anomalies, budget overruns, and
-              optimization opportunities before they impact your bottom line
-            </p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">📈</div>
-            <h3>Predictive Analytics</h3>
-            <p>
-              Machine learning-powered forecasting to predict future costs and
-              plan budgets with confidence
-            </p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">🔍</div>
-            <h3>Resource Discovery</h3>
-            <p>
-              Automatically scan and identify all AWS resources including EC2, RDS,
-              S3, and more for complete visibility
-            </p>
-          </div>
-
-          <div className="feature-card">
-            <div className="feature-icon">📑</div>
-            <h3>Custom Reports</h3>
-            <p>
-              Generate detailed cost reports for executives, finance teams, and
-              stakeholders with customizable dashboards
-            </p>
-          </div>
+          {features.map((feature) => (
+            <article className="feature-card" key={feature.title}>
+              <div className="feature-icon">{feature.label}</div>
+              <h3>{feature.title}</h3>
+              <p>{feature.description}</p>
+            </article>
+          ))}
         </div>
       </section>
 
-      {/* How It Works Section */}
       <section id="how-it-works" className="how-it-works">
-        <h2 className="section-title">Get Started in Minutes</h2>
+        <div className="section-heading">
+          <p className="section-kicker">Workflow</p>
+          <h2 className="section-title">Go from connected accounts to measurable savings in four steps.</h2>
+        </div>
+
         <div className="steps">
-          <div className="step">
-            <div className="step-number">1</div>
-            <h3>Connect Your AWS Account</h3>
-            <p>Securely connect your AWS account using read-only IAM roles</p>
-          </div>
-
-          <div className="step">
-            <div className="step-number">2</div>
-            <h3>Scan Your Resources</h3>
-            <p>Our platform automatically discovers all your AWS resources and costs</p>
-          </div>
-
-          <div className="step">
-            <div className="step-number">3</div>
-            <h3>Get Recommendations</h3>
-            <p>Receive instant optimization recommendations with potential savings</p>
-          </div>
-
-          <div className="step">
-            <div className="step-number">4</div>
-            <h3>Take Action & Save</h3>
-            <p>Implement recommendations and watch your costs drop month over month</p>
-          </div>
+          {steps.map((step) => (
+            <article className="step" key={step.number}>
+              <div className="step-number">{step.number}</div>
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
+            </article>
+          ))}
         </div>
       </section>
 
-      {/* Problem/Solution Section */}
       <section className="problem-solution">
         <div className="problem-solution-container">
           <div className="problem">
-            <h2>The Cloud Waste Problem</h2>
+            <p className="section-kicker">Without CostWatch</p>
+            <h2>The cloud waste problem</h2>
             <ul>
-              <li>Companies waste 32% of their cloud spending on average</li>
-              <li>Lack of visibility into what drives costs</li>
-              <li>Unused EC2 instances running 24/7</li>
-              <li>Over-provisioned resources</li>
-              <li>Surprise AWS bills at end of month</li>
+              <li>Spend data lives in too many consoles and billing exports.</li>
+              <li>Teams only notice overruns after finance closes the month.</li>
+              <li>Idle resources, overprovisioning, and retention sprawl compound quietly.</li>
+              <li>Engineering and finance lack a shared source of truth.</li>
             </ul>
           </div>
 
           <div className="solution">
-            <h2>The CostWatch Solution</h2>
+            <p className="section-kicker">With CostWatch</p>
+            <h2>The CostWatch operating model</h2>
             <ul>
-              <li>Complete visibility into every dollar spent</li>
-              <li>Automated waste detection and alerts</li>
-              <li>Right-sizing recommendations based on usage</li>
-              <li>Predictive budgeting and forecasting</li>
-              <li>Real-time cost monitoring and controls</li>
+              <li>Unified dashboards surface provider, service, and regional cost drivers instantly.</li>
+              <li>Alerts and forecasts keep teams ahead of billing surprises.</li>
+              <li>Optimization recommendations translate waste into clear savings paths.</li>
+              <li>Leadership gets a calmer, cleaner story about cloud efficiency.</li>
             </ul>
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
       <section id="pricing" className="pricing">
-        <h2 className="section-title">Simple, Transparent Pricing</h2>
+        <div className="section-heading">
+          <p className="section-kicker">Pricing</p>
+          <h2 className="section-title">Simple plans for companies growing their cloud footprint fast.</h2>
+        </div>
+
         <div className="pricing-cards">
-          <div className="pricing-card">
-            <h3>Starter</h3>
-            <div className="price">
-              <span className="currency">$</span>
-              <span className="amount">49</span>
-              <span className="period">/month</span>
-            </div>
-            <ul className="pricing-features">
-              <li>Up to $10K AWS spend</li>
-              <li>5 AWS accounts</li>
-              <li>Basic cost monitoring</li>
-              <li>Email alerts</li>
-              <li>7-day data retention</li>
-            </ul>
-            <button className="btn-pricing" onClick={() => navigate('/register')}>
-              Start Free Trial
-            </button>
-          </div>
-
-          <div className="pricing-card featured">
-            <div className="popular-badge">Most Popular</div>
-            <h3>Professional</h3>
-            <div className="price">
-              <span className="currency">$</span>
-              <span className="amount">199</span>
-              <span className="period">/month</span>
-            </div>
-            <ul className="pricing-features">
-              <li>Up to $50K AWS spend</li>
-              <li>20 AWS accounts</li>
-              <li>Advanced analytics</li>
-              <li>Slack & email alerts</li>
-              <li>90-day data retention</li>
-              <li>Custom dashboards</li>
-            </ul>
-            <button className="btn-pricing-primary" onClick={() => navigate('/register')}>
-              Start Free Trial
-            </button>
-          </div>
-
-          <div className="pricing-card">
-            <h3>Enterprise</h3>
-            <div className="price">
-              <span className="currency">$</span>
-              <span className="amount">499</span>
-              <span className="period">/month</span>
-            </div>
-            <ul className="pricing-features">
-              <li>Unlimited AWS spend</li>
-              <li>Unlimited accounts</li>
-              <li>ML-powered forecasting</li>
-              <li>Multi-channel alerts</li>
-              <li>1-year data retention</li>
-              <li>Dedicated support</li>
-              <li>Custom integrations</li>
-            </ul>
-            <button className="btn-pricing" onClick={() => navigate('/register')}>
-              Contact Sales
-            </button>
-          </div>
+          {pricingPlans.map((plan) => (
+            <article className={`pricing-card ${plan.featured ? 'featured' : ''}`} key={plan.name}>
+              {plan.featured && <div className="popular-badge">Most popular</div>}
+              <h3>{plan.name}</h3>
+              <p className="pricing-description">{plan.description}</p>
+              <div className="price">
+                <span className="currency">$</span>
+                <span className="amount">{plan.price}</span>
+                <span className="period">/month</span>
+              </div>
+              <ul className="pricing-features">
+                {plan.features.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
+              <button
+                type="button"
+                className={plan.featured ? 'landing-btn-pricing-primary' : 'landing-btn-pricing'}
+                onClick={() => navigate('/register')}
+              >
+                {plan.cta}
+              </button>
+            </article>
+          ))}
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="cta">
-        <h2>Ready to Optimize Your AWS Costs?</h2>
-        <p>Join hundreds of companies saving millions on cloud infrastructure</p>
-        <button className="btn-primary-large" onClick={() => navigate('/register')}>
-          Start Your Free Trial
-        </button>
-        <p className="cta-note">14-day free trial • No credit card required • Cancel anytime</p>
+        <div className="cta-card">
+          <p className="section-kicker">Ready to move faster</p>
+          <h2>Build a cleaner, sharper cloud cost workflow with CostWatch.</h2>
+          <p>Join teams using CostWatch to turn cost telemetry into confident action.</p>
+          <button type="button" className="landing-btn-primary-large" onClick={() => navigate('/register')}>
+            Start your free trial
+          </button>
+          <p className="cta-note">14-day trial. No credit card required. Cancel anytime.</p>
+        </div>
       </section>
 
-      {/* Footer */}
       <footer className="footer">
         <div className="footer-content">
           <div className="footer-section">
             <h4>CostWatch</h4>
-            <p>Smart cloud cost optimization for modern teams</p>
+            <p>Premium multi-cloud cost intelligence for fast-scaling teams.</p>
           </div>
           <div className="footer-section">
             <h4>Product</h4>
@@ -277,18 +325,19 @@ function LandingPage() {
           </div>
           <div className="footer-section">
             <h4>Company</h4>
-            <a href="/about">About Us</a>
+            <a href="/about">About us</a>
             <a href="/contact">Contact</a>
             <a href="/careers">Careers</a>
           </div>
           <div className="footer-section">
             <h4>Legal</h4>
-            <a href="/privacy">Privacy Policy</a>
-            <a href="/terms">Terms of Service</a>
+            <a href="/privacy">Privacy policy</a>
+            <a href="/terms">Terms of service</a>
           </div>
         </div>
+
         <div className="footer-bottom">
-          <p>&copy; 2024 CostWatch. All rights reserved.</p>
+          <p>&copy; 2026 CostWatch. All rights reserved.</p>
         </div>
       </footer>
     </div>
