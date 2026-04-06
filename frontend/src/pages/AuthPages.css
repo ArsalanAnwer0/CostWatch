@@ -265,6 +265,12 @@
   background: rgba(7, 15, 28, 0.96);
 }
 
+.btn-social:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .back-home {
   padding-top: 22px;
   text-align: center;

@@ -4,6 +4,30 @@ import { STORAGE_KEYS } from '../constants';
 import { API_ENDPOINTS } from '../config/api';
 import './AuthPages.css';
 
+async function loginAfterRegistration(email, password, fullName) {
+  const loginResponse = await fetch(API_ENDPOINTS.gateway.auth.login, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
+
+  const loginData = await loginResponse.json();
+
+  if (!loginResponse.ok) {
+    throw new Error(loginData.message || loginData.detail || 'Auto-login failed');
+  }
+
+  return {
+    token: loginData.token || loginData.access_token,
+    user: loginData.user || { email, full_name: fullName },
+  };
+}
+
 function RegisterPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -71,14 +95,15 @@ function RegisterPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Auto-login after successful registration
         if (data.token || data.access_token) {
           localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token || data.access_token);
           localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data.user || { email: formData.email, full_name: formData.full_name }));
           navigate('/dashboard');
         } else {
-          // If no token returned, redirect to login
-          navigate('/login');
+          const session = await loginAfterRegistration(formData.email, formData.password, formData.full_name);
+          localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, session.token);
+          localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(session.user));
+          navigate('/dashboard');
         }
       } else {
         setError(data.message || data.detail || 'Registration failed. Please try again.');
@@ -199,11 +224,11 @@ function RegisterPage() {
         </div>
 
         <div className="social-login">
-          <button className="btn-social">
-            <span>Google</span>
+          <button className="btn-social" type="button" disabled aria-disabled="true">
+            <span>Google Soon</span>
           </button>
-          <button className="btn-social">
-            <span>GitHub</span>
+          <button className="btn-social" type="button" disabled aria-disabled="true">
+            <span>GitHub Soon</span>
           </button>
         </div>
 

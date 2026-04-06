@@ -4,6 +4,24 @@ import { STORAGE_KEYS } from '../constants';
 import { API_ENDPOINTS } from '../config/api';
 import './AuthPages.css';
 
+async function getCurrentUser(token, fallbackEmail) {
+  try {
+    const response = await fetch(API_ENDPOINTS.gateway.auth.me, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      return { email: fallbackEmail };
+    }
+
+    return await response.json();
+  } catch (error) {
+    return { email: fallbackEmail };
+  }
+}
+
 function LoginPage() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -38,8 +56,11 @@ function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token || data.access_token);
-        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data.user || { email: formData.email }));
+        const token = data.token || data.access_token;
+        const user = data.user || await getCurrentUser(token, formData.email);
+
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(user));
         navigate('/dashboard');
       } else {
         setError(data.message || data.detail || 'Login failed. Please check your credentials.');
@@ -129,11 +150,11 @@ function LoginPage() {
         </div>
 
         <div className="social-login">
-          <button className="btn-social">
-            <span>Google</span>
+          <button className="btn-social" type="button" disabled aria-disabled="true">
+            <span>Google Soon</span>
           </button>
-          <button className="btn-social">
-            <span>GitHub</span>
+          <button className="btn-social" type="button" disabled aria-disabled="true">
+            <span>GitHub Soon</span>
           </button>
         </div>
 
