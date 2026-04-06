@@ -55,6 +55,11 @@ export const ResourceService = {
 };
 
 export const CostService = {
+  getSummary: (period = '90d') =>
+    get(`${API_ENDPOINTS.costs.summary}?period=${period}`),
+
+  getMonthly: () => get(API_ENDPOINTS.costs.monthly),
+
   analyzeCosts: (accountId, startDate, endDate) =>
     post(API_ENDPOINTS.costs.analyze, {
       account_id: accountId,
@@ -67,6 +72,15 @@ export const CostService = {
       account_id: accountId,
       days,
     }),
+
+  getServicesHealth: () => get(API_ENDPOINTS.costs.servicesHealth),
+};
+
+export const DashboardService = {
+  getSummary: CostService.getSummary,
+  getMonthly: CostService.getMonthly,
+  getResources: ResourceService.scanAll,
+  getServicesHealth: CostService.getServicesHealth,
 };
 
 export const checkServiceHealth = async () => {
@@ -83,5 +97,6 @@ export default {
   post,
   ResourceService,
   CostService,
+  DashboardService,
   checkServiceHealth,
 };

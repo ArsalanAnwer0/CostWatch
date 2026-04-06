@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { STORAGE_KEYS } from '../constants';
+import { API_ENDPOINTS } from '../config/api';
 import './AuthPages.css';
 
 function RegisterPage() {
@@ -54,7 +56,7 @@ function RegisterPage() {
     }
 
     try {
-      const response = await fetch('http://localhost:8002/auth/register', {
+      const response = await fetch(API_ENDPOINTS.gateway.auth.register, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,8 +73,8 @@ function RegisterPage() {
       if (response.ok) {
         // Auto-login after successful registration
         if (data.token || data.access_token) {
-          localStorage.setItem('token', data.token || data.access_token);
-          localStorage.setItem('user', JSON.stringify(data.user || { email: formData.email, full_name: formData.full_name }));
+          localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token || data.access_token);
+          localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data.user || { email: formData.email, full_name: formData.full_name }));
           navigate('/dashboard');
         } else {
           // If no token returned, redirect to login

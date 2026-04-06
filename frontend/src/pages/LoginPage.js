@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { STORAGE_KEYS } from '../constants';
+import { API_ENDPOINTS } from '../config/api';
 import './AuthPages.css';
 
 function LoginPage() {
@@ -25,7 +27,7 @@ function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8002/auth/login', {
+      const response = await fetch(API_ENDPOINTS.gateway.auth.login, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,8 +38,8 @@ function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token || data.access_token);
-        localStorage.setItem('user', JSON.stringify(data.user || { email: formData.email }));
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, data.token || data.access_token);
+        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data.user || { email: formData.email }));
         navigate('/dashboard');
       } else {
         setError(data.message || data.detail || 'Login failed. Please check your credentials.');

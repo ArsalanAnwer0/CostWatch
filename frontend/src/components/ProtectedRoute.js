@@ -3,9 +3,10 @@
  */
 import React from 'react';
 import { Navigate } from 'react-router-dom';
+import { STORAGE_KEYS } from '../constants';
 
 function ProtectedRoute({ children }) {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 
   // If no token, redirect to login
   if (!token) {

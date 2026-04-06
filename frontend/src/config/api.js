@@ -14,8 +14,11 @@ export const API_ENDPOINTS = {
     },
   },
   costs: {
+    summary: `${API_BASE_URL}/costs/summary`,
     analyze: `${API_BASE_URL}/costs/analyze`,
     trends: `${API_BASE_URL}/costs/trends`,
+    monthly: `${API_BASE_URL}/costs/monthly`,
+    servicesHealth: `${API_BASE_URL}/costs/services/health`,
   },
   resources: {
     scanAll: `${API_BASE_URL}/costs/resources`,
@@ -29,7 +32,7 @@ export const DEFAULT_HEADERS = {
 };
 
 export const getAuthToken = () => {
-  return localStorage.getItem('auth_token');
+  return localStorage.getItem('token') || localStorage.getItem('auth_token');
 };
 
 export const getAuthHeaders = () => {
