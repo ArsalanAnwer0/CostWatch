@@ -66,6 +66,7 @@ function DashboardPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState('overview');
   const [selectedRange, setSelectedRange] = useLocalStorage(STORAGE_KEYS.DASHBOARD_RANGE, '6m');
   const [selectedProvider, setSelectedProvider] = useLocalStorage(STORAGE_KEYS.DASHBOARD_PROVIDER, 'all');
@@ -264,6 +265,7 @@ function DashboardPage() {
 
   const handleSidebarNavigate = (sectionId) => {
     const didScroll = scrollToSection(sectionId);
+    setIsSidebarOpen(false);
 
     if (didScroll) {
       return;
@@ -292,12 +294,21 @@ function DashboardPage() {
 
   return (
     <div className="dashboard-shell">
+      <button
+        type="button"
+        className={`dashboard-overlay ${isSidebarOpen ? 'visible' : ''}`}
+        onClick={() => setIsSidebarOpen(false)}
+        aria-label="Close navigation overlay"
+      ></button>
+
       <DashboardSidebar
         navigationSections={DASHBOARD_NAV_SECTIONS}
         dashboardMeta={dashboardData.meta}
         providerStatuses={dashboardData.providerStatuses}
         activeSectionId={activeSectionId}
+        isOpen={isSidebarOpen}
         onNavigate={handleSidebarNavigate}
+        onClose={() => setIsSidebarOpen(false)}
       />
 
       <main className="dashboard-main">
@@ -308,6 +319,7 @@ function DashboardPage() {
           rangeOptions={TIME_RANGE_OPTIONS}
           refreshing={refreshing}
           unreadAlerts={dashboardData.meta.unreadAlerts}
+          onOpenMenu={() => setIsSidebarOpen(true)}
           onSearchChange={setSearchQuery}
           onRangeChange={setSelectedRange}
           onRefresh={() => refreshDashboard({ showToast: true })}

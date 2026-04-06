@@ -8,6 +8,7 @@ function DashboardHeader({
   rangeOptions,
   refreshing,
   unreadAlerts,
+  onOpenMenu,
   onSearchChange,
   onRangeChange,
   onRefresh,
@@ -17,6 +18,14 @@ function DashboardHeader({
   return (
     <header className="dashboard-header">
       <div className="dashboard-title-block">
+        <button
+          type="button"
+          className="dashboard-mobile-menu"
+          onClick={onOpenMenu}
+          aria-label="Open navigation"
+        >
+          MN
+        </button>
         <p className="dashboard-eyebrow">Unified multi-cloud control room</p>
         <h2>Cloud spend command center</h2>
         <p className="dashboard-subtitle">

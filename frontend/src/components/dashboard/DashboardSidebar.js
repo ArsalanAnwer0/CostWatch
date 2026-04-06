@@ -6,16 +6,21 @@ function DashboardSidebar({
   dashboardMeta,
   providerStatuses,
   activeSectionId,
+  isOpen,
   onNavigate,
+  onClose,
 }) {
   return (
-    <aside className="dashboard-sidebar">
+    <aside className={`dashboard-sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-brand">
         <div className="brand-mark">CW</div>
         <div>
           <h1>CostWatch</h1>
           <p>AI cost intelligence</p>
         </div>
+        <button type="button" className="dashboard-sidebar-close" onClick={onClose} aria-label="Close sidebar">
+          CL
+        </button>
       </div>
 
       <div className="sidebar-health-card">
