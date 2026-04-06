@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 
@@ -135,10 +135,23 @@ const faqs = [
 
 function LandingPage() {
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleNavigate = (path) => {
+    setIsMobileMenuOpen(false);
+    navigate(path);
+  };
 
   return (
     <div className="landing-page">
       <header className="hero">
+        <button
+          type="button"
+          className={`landing-mobile-overlay ${isMobileMenuOpen ? 'visible' : ''}`}
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-label="Close mobile navigation"
+        ></button>
+
         <nav className="navbar">
           <div className="logo">
             <div className="logo-mark">CW</div>
@@ -147,6 +160,15 @@ function LandingPage() {
               <p>AI cost intelligence</p>
             </div>
           </div>
+
+          <button
+            type="button"
+            className="landing-mobile-toggle"
+            onClick={() => setIsMobileMenuOpen(true)}
+            aria-label="Open navigation"
+          >
+            MN
+          </button>
 
           <div className="nav-links">
             <a href="#features">Features</a>
@@ -160,6 +182,31 @@ function LandingPage() {
             </button>
           </div>
         </nav>
+
+        <div className={`landing-mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
+          <div className="landing-mobile-menu-header">
+            <strong>Navigate</strong>
+            <button
+              type="button"
+              className="landing-mobile-toggle"
+              onClick={() => setIsMobileMenuOpen(false)}
+              aria-label="Close navigation"
+            >
+              CL
+            </button>
+          </div>
+          <div className="landing-mobile-links">
+            <a href="#features" onClick={() => setIsMobileMenuOpen(false)}>Features</a>
+            <a href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)}>How it works</a>
+            <a href="#pricing" onClick={() => setIsMobileMenuOpen(false)}>Pricing</a>
+            <button type="button" className="landing-btn-secondary" onClick={() => handleNavigate('/login')}>
+              Login
+            </button>
+            <button type="button" className="landing-btn-primary" onClick={() => handleNavigate('/register')}>
+              Get started
+            </button>
+          </div>
+        </div>
 
         <div className="hero-layout">
           <div className="hero-content">
