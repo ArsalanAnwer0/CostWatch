@@ -1044,6 +1044,95 @@
   color: #86efac;
 }
 
+.table-action-button {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(8, 16, 30, 0.84);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.table-action-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.26);
+}
+
+.service-detail-drawer {
+  margin-top: 18px;
+  padding: 20px;
+  border-radius: 24px;
+  background: rgba(8, 16, 30, 0.86);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.service-detail-header,
+.service-detail-grid {
+  display: flex;
+  gap: 14px;
+}
+
+.service-detail-header {
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.service-detail-close {
+  height: 40px;
+  min-width: 40px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.service-detail-grid {
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.service-detail-card,
+.service-detail-block {
+  border-radius: 18px;
+  background: rgba(10, 19, 36, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.service-detail-card {
+  flex: 1 1 180px;
+  padding: 16px;
+}
+
+.service-detail-card strong,
+.service-detail-block strong {
+  color: var(--text-primary);
+}
+
+.service-detail-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.service-detail-block {
+  padding: 18px;
+  margin-top: 12px;
+}
+
+.service-detail-block p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
 .budget-card {
   padding: 16px;
   border-radius: 18px;
@@ -1244,6 +1333,11 @@
   .dashboard-toolbar,
   .dashboard-user-menu {
     width: 100%;
+  }
+
+  .service-detail-header,
+  .service-detail-grid {
+    flex-direction: column;
   }
 
   .dashboard-search,

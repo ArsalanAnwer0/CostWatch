@@ -74,6 +74,7 @@ function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [dashboardSnapshot, setDashboardSnapshot] = useState({});
   const [user, setUser] = useState(null);
+  const [selectedService, setSelectedService] = useState(null);
   const [toast, setToast] = useState(null);
   const deferredSearchQuery = useDeferredValue(searchQuery);
 
@@ -282,6 +283,7 @@ function DashboardPage() {
     setSelectedAlertSeverity('all');
     setSearchQuery('');
     setSelectedRange('6m');
+    setSelectedService(null);
     setToast({
       type: 'info',
       message: 'Dashboard filters reset to the default operating view.',
@@ -342,17 +344,20 @@ function DashboardPage() {
             selectedAlertSeverity={selectedAlertSeverity}
             filteredServices={filteredServices}
             filteredAlerts={filteredAlerts}
-            filteredBudgets={filteredBudgets}
-            filteredProviderBreakdown={filteredProviderBreakdown}
-            filteredRegions={filteredRegions}
-            normalizedQuery={normalizedQuery}
-            totalSpend={totalSpend}
-            activeProviderKeys={activeProviderKeys}
-            onProviderChange={setSelectedProvider}
-            onAlertSeverityChange={setSelectedAlertSeverity}
-            onResetFilters={handleResetFilters}
-            onQuickAction={handleQuickAction}
-          />
+          filteredBudgets={filteredBudgets}
+          filteredProviderBreakdown={filteredProviderBreakdown}
+          filteredRegions={filteredRegions}
+          selectedService={selectedService}
+          normalizedQuery={normalizedQuery}
+          totalSpend={totalSpend}
+          activeProviderKeys={activeProviderKeys}
+          onProviderChange={setSelectedProvider}
+          onAlertSeverityChange={setSelectedAlertSeverity}
+          onResetFilters={handleResetFilters}
+          onSelectService={setSelectedService}
+          onCloseService={() => setSelectedService(null)}
+          onQuickAction={handleQuickAction}
+        />
         </div>
       </main>
 

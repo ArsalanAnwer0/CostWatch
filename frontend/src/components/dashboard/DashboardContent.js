@@ -295,7 +295,64 @@ function AlertsPanel({ alerts }) {
   );
 }
 
-function ServicesPanel({ services, normalizedQuery }) {
+function ServiceDetailDrawer({ service, onClose }) {
+  if (!service) {
+    return null;
+  }
+
+  return (
+    <div className="service-detail-drawer">
+      <div className="service-detail-header">
+        <div>
+          <p className="panel-eyebrow">Service Detail</p>
+          <h3>{service.service}</h3>
+        </div>
+        <button type="button" className="service-detail-close" onClick={onClose} aria-label="Close service detail">
+          CL
+        </button>
+      </div>
+
+      <div className="service-detail-grid">
+        <div className="service-detail-card">
+          <span className="service-detail-label">Monthly cost</span>
+          <strong>{formatCurrency(service.monthlyCost)}</strong>
+        </div>
+        <div className="service-detail-card">
+          <span className="service-detail-label">Efficiency score</span>
+          <strong>{service.efficiencyScore}/100</strong>
+        </div>
+        <div className="service-detail-card">
+          <span className="service-detail-label">Utilization</span>
+          <strong>{service.utilization}</strong>
+        </div>
+        <div className="service-detail-card">
+          <span className="service-detail-label">Owner</span>
+          <strong>{service.owner}</strong>
+        </div>
+      </div>
+
+      <div className="service-detail-block">
+        <span className="service-detail-label">Operational context</span>
+        <p>
+          {PROVIDER_LABELS[service.provider]} workload in {service.region} with a <strong>{service.riskLevel}</strong> optimization risk level.
+          Current status is <strong>{service.status}</strong>, with a <strong>{service.change > 0 ? '+' : ''}{service.change.toFixed(1)}%</strong> trend versus the previous period.
+        </p>
+      </div>
+
+      <div className="service-detail-block">
+        <span className="service-detail-label">Recommended move</span>
+        <p>{service.recommendation}</p>
+      </div>
+
+      <div className="service-detail-block">
+        <span className="service-detail-label">Execution playbook</span>
+        <p>{service.runbook}</p>
+      </div>
+    </div>
+  );
+}
+
+function ServicesPanel({ services, normalizedQuery, selectedService, onSelectService, onCloseService }) {
   return (
     <article className="dashboard-panel panel-span-2" id="services">
       <div className="panel-header">
@@ -320,6 +377,7 @@ function ServicesPanel({ services, normalizedQuery }) {
                 <th>Trend</th>
                 <th>Monthly cost</th>
                 <th>Recommendation</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -359,6 +417,15 @@ function ServicesPanel({ services, normalizedQuery }) {
                     </td>
                     <td>{formatCurrency(service.monthlyCost)}</td>
                     <td>{service.recommendation}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="table-action-button"
+                        onClick={() => onSelectService(service)}
+                      >
+                        Inspect
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
@@ -371,6 +438,8 @@ function ServicesPanel({ services, normalizedQuery }) {
           <p>Try a provider name, region, or recommendation keyword to widen the result set.</p>
         </div>
       )}
+
+      <ServiceDetailDrawer service={selectedService} onClose={onCloseService} />
     </article>
   );
 }
@@ -496,12 +565,15 @@ function DashboardContent({
   filteredBudgets,
   filteredProviderBreakdown,
   filteredRegions,
+  selectedService,
   normalizedQuery,
   totalSpend,
   activeProviderKeys,
   onProviderChange,
   onAlertSeverityChange,
   onResetFilters,
+  onSelectService,
+  onCloseService,
   onQuickAction,
 }) {
   return (
@@ -525,7 +597,13 @@ function DashboardContent({
         />
         <ProviderBreakdownPanel providerBreakdown={filteredProviderBreakdown} totalSpend={totalSpend} />
         <AlertsPanel alerts={filteredAlerts} />
-        <ServicesPanel services={filteredServices} normalizedQuery={normalizedQuery} />
+        <ServicesPanel
+          services={filteredServices}
+          normalizedQuery={normalizedQuery}
+          selectedService={selectedService}
+          onSelectService={onSelectService}
+          onCloseService={onCloseService}
+        />
         <DashboardStack
           budgets={filteredBudgets}
           quickActions={dashboardData.quickActions}
