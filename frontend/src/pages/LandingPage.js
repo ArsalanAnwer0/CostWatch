@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './LandingPage.css';
 
 const stats = [
@@ -321,18 +321,18 @@ function LandingPage() {
             <h4>Product</h4>
             <a href="#features">Features</a>
             <a href="#pricing">Pricing</a>
-            <a href="/docs">Documentation</a>
+            <Link to="/docs">Documentation</Link>
           </div>
           <div className="footer-section">
             <h4>Company</h4>
-            <a href="/about">About us</a>
-            <a href="/contact">Contact</a>
-            <a href="/careers">Careers</a>
+            <Link to="/about">About us</Link>
+            <Link to="/contact">Contact</Link>
+            <Link to="/careers">Careers</Link>
           </div>
           <div className="footer-section">
             <h4>Legal</h4>
-            <a href="/privacy">Privacy policy</a>
-            <a href="/terms">Terms of service</a>
+            <Link to="/privacy">Privacy policy</Link>
+            <Link to="/terms">Terms of service</Link>
           </div>
         </div>
 
