@@ -7,6 +7,8 @@ function DashboardHeader({
   selectedRange,
   rangeOptions,
   refreshing,
+  liveDataAvailable,
+  lastUpdatedLabel,
   unreadAlerts,
   onOpenMenu,
   onSearchChange,
@@ -31,6 +33,10 @@ function DashboardHeader({
         <p className="dashboard-subtitle">
           Monitor real-time cost posture, surface anomalies, and push optimizations across AWS, Azure, and GCP.
         </p>
+        <div className={`dashboard-status-chip ${refreshing ? 'syncing' : ''}`}>
+          <span className={`dashboard-status-dot ${refreshing ? 'syncing' : liveDataAvailable ? 'live' : 'fallback'}`}></span>
+          <span>{refreshing ? 'Syncing live telemetry' : lastUpdatedLabel}</span>
+        </div>
       </div>
 
       <div className="dashboard-toolbar">

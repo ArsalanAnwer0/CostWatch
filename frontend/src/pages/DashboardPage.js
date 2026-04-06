@@ -318,6 +318,8 @@ function DashboardPage() {
           selectedRange={selectedRange}
           rangeOptions={TIME_RANGE_OPTIONS}
           refreshing={refreshing}
+          liveDataAvailable={dashboardData.meta.liveDataAvailable}
+          lastUpdatedLabel={dashboardData.meta.lastUpdatedLabel}
           unreadAlerts={dashboardData.meta.unreadAlerts}
           onOpenMenu={() => setIsSidebarOpen(true)}
           onSearchChange={setSearchQuery}
@@ -327,23 +329,31 @@ function DashboardPage() {
           onLogout={handleLogout}
         />
 
-        <DashboardContent
-          dashboardData={dashboardData}
-          selectedProvider={selectedProvider}
-          selectedAlertSeverity={selectedAlertSeverity}
-          filteredServices={filteredServices}
-          filteredAlerts={filteredAlerts}
-          filteredBudgets={filteredBudgets}
-          filteredProviderBreakdown={filteredProviderBreakdown}
-          filteredRegions={filteredRegions}
-          normalizedQuery={normalizedQuery}
-          totalSpend={totalSpend}
-          activeProviderKeys={activeProviderKeys}
-          onProviderChange={setSelectedProvider}
-          onAlertSeverityChange={setSelectedAlertSeverity}
-          onResetFilters={handleResetFilters}
-          onQuickAction={handleQuickAction}
-        />
+        <div className={`dashboard-content-shell ${refreshing ? 'refreshing' : ''}`}>
+          {refreshing && (
+            <div className="dashboard-refresh-indicator" aria-live="polite">
+              Refreshing spend snapshots, alerts, and provider health.
+            </div>
+          )}
+
+          <DashboardContent
+            dashboardData={dashboardData}
+            selectedProvider={selectedProvider}
+            selectedAlertSeverity={selectedAlertSeverity}
+            filteredServices={filteredServices}
+            filteredAlerts={filteredAlerts}
+            filteredBudgets={filteredBudgets}
+            filteredProviderBreakdown={filteredProviderBreakdown}
+            filteredRegions={filteredRegions}
+            normalizedQuery={normalizedQuery}
+            totalSpend={totalSpend}
+            activeProviderKeys={activeProviderKeys}
+            onProviderChange={setSelectedProvider}
+            onAlertSeverityChange={setSelectedAlertSeverity}
+            onResetFilters={handleResetFilters}
+            onQuickAction={handleQuickAction}
+          />
+        </div>
       </main>
 
       {toast && (
