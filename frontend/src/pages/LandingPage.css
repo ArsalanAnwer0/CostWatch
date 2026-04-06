@@ -350,11 +350,14 @@
 }
 
 .stats,
+.trust-strip,
 .features,
 .how-it-works,
 .problem-solution,
+.testimonials,
 .pricing,
 .cta,
+.faq,
 .footer {
   padding: 0 28px 80px;
 }
@@ -404,6 +407,39 @@
 .section-title {
   font-size: clamp(2rem, 4vw, 3.2rem);
   letter-spacing: -0.04em;
+}
+
+.trust-marquee,
+.testimonial-grid,
+.faq-grid {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.trust-marquee {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.trust-pill,
+.testimonial-card,
+.faq-card {
+  background: rgba(9, 18, 34, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.3);
+}
+
+.trust-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  padding: 0 18px;
+  border-radius: 18px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .features-grid,
@@ -481,6 +517,54 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
+}
+
+.testimonial-grid,
+.faq-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.testimonial-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.testimonial-card,
+.faq-card {
+  padding: 24px;
+  border-radius: 24px;
+}
+
+.testimonial-quote {
+  margin: 0 0 18px;
+  color: var(--text-primary);
+  line-height: 1.8;
+  font-size: 1.02rem;
+}
+
+.testimonial-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.testimonial-meta span,
+.faq-card p {
+  color: var(--text-secondary);
+}
+
+.faq-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.faq-card h3 {
+  margin: 0 0 12px;
+  font-size: 1.08rem;
+}
+
+.faq-card p {
+  margin: 0;
+  line-height: 1.75;
 }
 
 .problem,
@@ -635,8 +719,11 @@
 
 @media (max-width: 1080px) {
   .hero-layout,
+  .trust-marquee,
   .features-grid,
   .steps,
+  .testimonial-grid,
+  .faq-grid,
   .pricing-cards,
   .problem-solution-container,
   .footer-content {
@@ -651,11 +738,14 @@
 @media (max-width: 760px) {
   .hero,
   .stats,
+  .trust-strip,
   .features,
   .how-it-works,
   .problem-solution,
+  .testimonials,
   .pricing,
   .cta,
+  .faq,
   .footer {
     padding-left: 18px;
     padding-right: 18px;

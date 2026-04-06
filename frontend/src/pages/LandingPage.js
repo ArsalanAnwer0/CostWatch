@@ -92,6 +92,47 @@ const pricingPlans = [
   },
 ];
 
+const trustedTeams = ['Northstar AI', 'Ledger Forge', 'Orbit Cloud', 'Signal Stack', 'Nova Platform'];
+
+const testimonials = [
+  {
+    quote:
+      'CostWatch gave our engineering and finance teams the same spend story for the first time. That alone changed how we operate.',
+    author: 'Mina Patel',
+    role: 'VP Platform, Orbit Cloud',
+  },
+  {
+    quote:
+      'We moved from reactive cost reviews to a weekly optimization rhythm. The product feels more like an operating system than a dashboard.',
+    author: 'Jonas Reed',
+    role: 'Director of Infrastructure, Signal Stack',
+  },
+  {
+    quote:
+      'The UI makes complex cost movement legible. Our leadership team can see the signal without needing a walkthrough every time.',
+    author: 'Lena Brooks',
+    role: 'Finance Lead, Northstar AI',
+  },
+];
+
+const faqs = [
+  {
+    question: 'Does CostWatch support multi-cloud teams or only AWS-heavy companies?',
+    answer:
+      'The frontend is designed around AWS, Azure, and GCP from the start, with provider-aware breakdowns, filters, and operator workflows throughout the dashboard.',
+  },
+  {
+    question: 'Can finance and engineering use the same dashboard without getting lost?',
+    answer:
+      'That is the point of the product direction. The experience is intentionally built to give finance, platform, and leadership a shared operating view with different levels of detail.',
+  },
+  {
+    question: 'How fast can a team start seeing value?',
+    answer:
+      'The current product flow is optimized around fast visibility: connect accounts, sync spend drivers, surface anomalies, and prioritize savings opportunities in the first session.',
+  },
+];
+
 function LandingPage() {
   const navigate = useNavigate();
 
@@ -205,6 +246,19 @@ function LandingPage() {
         </div>
       </section>
 
+      <section className="trust-strip">
+        <div className="section-heading">
+          <p className="section-kicker">Trusted by fast-moving teams</p>
+        </div>
+        <div className="trust-marquee">
+          {trustedTeams.map((team) => (
+            <div className="trust-pill" key={team}>
+              {team}
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section id="features" className="features">
         <div className="section-heading">
           <p className="section-kicker">Product Surface</p>
@@ -265,6 +319,25 @@ function LandingPage() {
         </div>
       </section>
 
+      <section className="testimonials">
+        <div className="section-heading">
+          <p className="section-kicker">Customer signal</p>
+          <h2 className="section-title">Teams should feel calmer after opening a cost product, not more overwhelmed.</h2>
+        </div>
+
+        <div className="testimonial-grid">
+          {testimonials.map((testimonial) => (
+            <article className="testimonial-card" key={testimonial.author}>
+              <p className="testimonial-quote">“{testimonial.quote}”</p>
+              <div className="testimonial-meta">
+                <strong>{testimonial.author}</strong>
+                <span>{testimonial.role}</span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section id="pricing" className="pricing">
         <div className="section-heading">
           <p className="section-kicker">Pricing</p>
@@ -308,6 +381,22 @@ function LandingPage() {
             Start your free trial
           </button>
           <p className="cta-note">14-day trial. No credit card required. Cancel anytime.</p>
+        </div>
+      </section>
+
+      <section className="faq">
+        <div className="section-heading">
+          <p className="section-kicker">FAQ</p>
+          <h2 className="section-title">A few practical questions teams ask before they commit.</h2>
+        </div>
+
+        <div className="faq-grid">
+          {faqs.map((faq) => (
+            <article className="faq-card" key={faq.question}>
+              <h3>{faq.question}</h3>
+              <p>{faq.answer}</p>
+            </article>
+          ))}
         </div>
       </section>
 
