@@ -157,6 +157,7 @@ function LandingPage() {
   const scrollContainerRef = useRef(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState(storySections[0].id);
+  const showTopNav = activeSectionId === 'hero';
 
   const handleNavigate = (path) => {
     setIsMobileMenuOpen(false);
@@ -205,6 +206,12 @@ function LandingPage() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!showTopNav && isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+  }, [isMobileMenuOpen, showTopNav]);
+
   return (
     <div className="landing-page" ref={scrollContainerRef}>
       <button
@@ -214,7 +221,7 @@ function LandingPage() {
         aria-label="Close mobile navigation"
       ></button>
 
-      <nav className="navbar">
+      <nav className={`navbar ${showTopNav ? 'navbar-visible' : 'navbar-hidden'}`}>
         <div className="logo">
           <div className="logo-mark">CW</div>
           <div>
