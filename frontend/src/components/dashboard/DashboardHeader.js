@@ -1,4 +1,5 @@
 import React from 'react';
+import { BellIcon, MenuIcon, RefreshIcon } from './DashboardIcons';
 import { getInitials } from './dashboardUtils';
 
 function DashboardHeader({
@@ -26,7 +27,8 @@ function DashboardHeader({
           onClick={onOpenMenu}
           aria-label="Open navigation"
         >
-          MN
+          <MenuIcon />
+          <span className="sr-only">Open navigation</span>
         </button>
         <p className="dashboard-eyebrow">Unified multi-cloud control room</p>
         <h2>Cloud spend command center</h2>
@@ -68,7 +70,8 @@ function DashboardHeader({
           disabled={refreshing}
           aria-label="Refresh dashboard"
         >
-          {refreshing ? '...' : 'RF'}
+          <RefreshIcon spinning={refreshing} />
+          <span className="sr-only">Refresh dashboard</span>
         </button>
 
         <button
@@ -77,7 +80,8 @@ function DashboardHeader({
           aria-label="Notifications"
           onClick={onOpenAlerts}
         >
-          NT
+          <BellIcon />
+          <span className="sr-only">Open alerts</span>
           <span className="notification-count">{unreadAlerts}</span>
         </button>
 

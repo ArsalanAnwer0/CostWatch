@@ -1,4 +1,5 @@
 import React from 'react';
+import { CloseIcon } from './DashboardIcons';
 import { formatCurrency } from '../../utils';
 
 function DashboardSidebar({
@@ -19,7 +20,8 @@ function DashboardSidebar({
           <p>AI cost intelligence</p>
         </div>
         <button type="button" className="dashboard-sidebar-close" onClick={onClose} aria-label="Close sidebar">
-          CL
+          <CloseIcon />
+          <span className="sr-only">Close sidebar</span>
         </button>
       </div>
 

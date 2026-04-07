@@ -45,10 +45,17 @@
   border: 1px solid rgba(148, 163, 184, 0.14);
   background: rgba(8, 16, 30, 0.9);
   color: var(--text-primary);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
   cursor: pointer;
+}
+
+.dashboard-control-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.dashboard-control-icon.is-spinning {
+  animation: spin 1s linear infinite;
 }
 
 .brand-mark {
@@ -388,15 +395,15 @@
 
 .dashboard-icon-button {
   position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 48px;
   height: 48px;
   border-radius: 16px;
   background: rgba(10, 19, 36, 0.86);
   border-color: rgba(148, 163, 184, 0.14);
   color: var(--text-primary);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
 }
 
 .dashboard-icon-button:hover,
@@ -1106,9 +1113,12 @@
 }
 
 .service-detail-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   height: 40px;
   min-width: 40px;
-  padding: 0 12px;
+  padding: 0;
   border-radius: 14px;
   border: 1px solid rgba(148, 163, 184, 0.14);
   background: rgba(148, 163, 184, 0.08);

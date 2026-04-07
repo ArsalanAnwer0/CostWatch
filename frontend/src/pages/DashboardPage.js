@@ -4,7 +4,14 @@ import { LoadingSpinner, Toast } from '../components';
 import DashboardContent from '../components/dashboard/DashboardContent';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import DashboardSidebar from '../components/dashboard/DashboardSidebar';
-import { PROVIDER_LABELS } from '../components/dashboard/dashboardUtils';
+import {
+  aggregateRegionCosts,
+  buildDashboardExportCsv,
+  filterAlerts,
+  filterServices,
+  normalizeSearchQuery,
+  PROVIDER_LABELS,
+} from '../components/dashboard/dashboardUtils';
 import { useLocalStorage } from '../hooks';
 import { STORAGE_KEYS } from '../constants';
 import {
@@ -41,27 +48,6 @@ async function loadDashboardSnapshot() {
   };
 }
 
-const ALERT_SEVERITY_RANK = {
-  low: 0,
-  medium: 1,
-  high: 2,
-  critical: 3,
-};
-
-function aggregateRegionCosts(services) {
-  const totals = services.reduce((accumulator, service) => {
-    accumulator[service.region] = (accumulator[service.region] || 0) + service.monthlyCost;
-    return accumulator;
-  }, {});
-
-  return Object.entries(totals)
-    .map(([region, cost]) => ({
-      region,
-      cost: Math.round(cost * 100) / 100,
-    }))
-    .sort((left, right) => right.cost - left.cost);
-}
-
 function DashboardPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -94,47 +80,44 @@ function DashboardPage() {
     selectedProvider === 'all' ? true : budget.key === selectedProvider
   );
   const totalSpend = filteredProviderBreakdown.reduce((sum, provider) => sum + provider.value, 0);
-  const normalizedQuery = deferredSearchQuery.trim().toLowerCase();
-  const providerFilteredServices = dashboardData.services.filter((service) =>
+  const normalizedQuery = normalizeSearchQuery(deferredSearchQuery);
+  const providerScopedServices = dashboardData.services.filter((service) =>
     selectedProvider === 'all' ? true : service.provider === selectedProvider
   );
-  const filteredServices = providerFilteredServices.filter((service) => {
-    if (!normalizedQuery) {
-      return true;
-    }
-
-    return [
-      service.service,
-      PROVIDER_LABELS[service.provider],
-      service.region,
-      service.status,
-      service.recommendation,
-    ].some((value) => value.toLowerCase().includes(normalizedQuery));
+  const filteredServices = filterServices({
+    services: dashboardData.services,
+    selectedProvider,
+    query: normalizedQuery,
   });
-  const filteredAlerts = dashboardData.alerts.filter((alert) => {
-    const providerMatches = selectedProvider === 'all'
-      ? true
-      : [alert.title, alert.message, alert.action]
-        .some((value) => value.toLowerCase().includes(PROVIDER_LABELS[selectedProvider].toLowerCase()));
-    const severityMatches = selectedAlertSeverity === 'all'
-      ? true
-      : ALERT_SEVERITY_RANK[alert.severity] >= ALERT_SEVERITY_RANK[selectedAlertSeverity];
-
-    if (!providerMatches || !severityMatches) {
-      return false;
-    }
-
-    if (!normalizedQuery) {
-      return true;
-    }
-
-    return [alert.title, alert.message, alert.action].some((value) =>
-      value.toLowerCase().includes(normalizedQuery)
-    );
+  const filteredAlerts = filterAlerts({
+    alerts: dashboardData.alerts,
+    selectedProvider,
+    minimumSeverity: selectedAlertSeverity,
+    query: normalizedQuery,
   });
   const filteredRegions = selectedProvider === 'all'
     ? dashboardData.regions
-    : aggregateRegionCosts(providerFilteredServices);
+    : aggregateRegionCosts(providerScopedServices);
+
+  useEffect(() => {
+    if (
+      selectedAlert &&
+      !filteredAlerts.some((alert) => (
+        alert.title === selectedAlert.title && alert.provider === selectedAlert.provider
+      ))
+    ) {
+      setSelectedAlert(null);
+    }
+
+    if (
+      selectedService &&
+      !filteredServices.some((service) => (
+        service.service === selectedService.service && service.provider === selectedService.provider
+      ))
+    ) {
+      setSelectedService(null);
+    }
+  }, [filteredAlerts, filteredServices, selectedAlert, selectedService]);
 
   const refreshDashboard = async ({ showToast = false } = {}) => {
     setRefreshing(true);
@@ -174,6 +157,32 @@ function DashboardPage() {
     refreshDashboard();
   }, [navigate]);
 
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      if (selectedService) {
+        setSelectedService(null);
+        return;
+      }
+
+      if (selectedAlert) {
+        setSelectedAlert(null);
+        return;
+      }
+
+      if (isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isSidebarOpen, selectedAlert, selectedService]);
+
   const handleLogout = () => {
     localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.USER_DATA);
@@ -208,28 +217,12 @@ function DashboardPage() {
 
   const handleQuickAction = async (actionId) => {
     if (actionId === 'export-data') {
-      const rows = [
-        ['section', 'name', 'provider', 'value'],
-        ...dashboardData.providerBreakdown.map((provider) => [
-          'provider',
-          provider.label,
-          provider.label,
-          provider.value,
-        ]),
-        ...dashboardData.services.map((service) => [
-          'service',
-          service.service,
-          PROVIDER_LABELS[service.provider],
-          service.monthlyCost,
-        ]),
-        ...dashboardData.regions.map((region) => [
-          'region',
-          region.region,
-          'multi-cloud',
-          region.cost,
-        ]),
-      ];
-      const csv = rows.map((row) => row.join(',')).join('\n');
+      const csv = buildDashboardExportCsv({
+        providerBreakdown: filteredProviderBreakdown,
+        services: filteredServices,
+        regions: filteredRegions,
+        regionProviderLabel: selectedProvider === 'all' ? 'Multi-cloud' : PROVIDER_LABELS[selectedProvider],
+      });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -241,7 +234,7 @@ function DashboardPage() {
 
       setToast({
         type: 'success',
-        message: 'Dashboard data exported for finance and ops workflows.',
+        message: 'Dashboard data exported with the current provider and search filters applied.',
       });
       return;
     }

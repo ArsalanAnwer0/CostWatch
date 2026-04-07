@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { PROVIDER_CONFIG } from '../../data/dashboardData';
 import { formatCompactNumber, formatCurrency } from '../../utils';
+import { CloseIcon } from './DashboardIcons';
 import { DonutTooltip, RegionTooltip, SpendTooltip } from './DashboardTooltips';
 import { PROVIDER_LABELS } from './dashboardUtils';
 
@@ -271,7 +272,8 @@ function AlertDetailDrawer({ alert, onClose }) {
           <h3>{alert.title}</h3>
         </div>
         <button type="button" className="service-detail-close" onClick={onClose} aria-label="Close alert detail">
-          CL
+          <CloseIcon />
+          <span className="sr-only">Close alert detail</span>
         </button>
       </div>
 
@@ -359,7 +361,8 @@ function ServiceDetailDrawer({ service, onClose }) {
           <h3>{service.service}</h3>
         </div>
         <button type="button" className="service-detail-close" onClick={onClose} aria-label="Close service detail">
-          CL
+          <CloseIcon />
+          <span className="sr-only">Close service detail</span>
         </button>
       </div>
 
